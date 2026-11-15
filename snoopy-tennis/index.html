@@ -377,6 +377,8 @@ function drawWoodstock(x,y,ink){
   ctx.restore();
 }
 
+function drawBird(x,y,ink){ctx.save();ctx.translate(x,y);ctx.scale(.62,.62);drawWoodstock(0,0,ink);ctx.restore()}
+function missLabel(ink){ctx.fillStyle=ink?INK:GHOST;ctx.font='bold 11px monospace';ctx.fillText('MISS',238,15)}
 function drawBall(x,y,ink,lucy){
   ctx.beginPath();ctx.arc(x,y,lucy?8.5:7,0,Math.PI*2);
   ctx.fillStyle=ink?INK:GHOST;ctx.fill();
@@ -395,8 +397,8 @@ function render(now){
     for(let c=0;c<COLS;c++)drawBall(COL_X(c),LANES[l],false);
   }
   drawCharlie(56,LANES[2]-6,false,false);drawCharlie(26,110,false,false,true);
-  for(let i=0;i<MAX_MISS;i++)drawWoodstock(250+i*34,24,false);
-  number(18,12,88,3,14,26,4,false);colon(0,0,false);
+  missLabel(false);for(let i=0;i<MAX_MISS;i++)drawBird(250+i*24,32,false);
+  number(96,12,88,3,14,26,4,false);
 
   // always-on scenery
   drawScenery(true);
@@ -404,9 +406,9 @@ function render(now){
   if(mode==='clock'){
     const d=new Date();let h=d.getHours()%12;if(h===0)h=12;
     const m=d.getMinutes();
-    number(20,12,h,2,16,28,5);
-    colon(78,12,Math.floor(now/500)%2===0);
-    number(90,12,String(m).padStart(2,'0'),2,16,28,5);
+    number(96,12,h,2,16,28,5);
+    colon(154,12,Math.floor(now/500)%2===0);
+    number(166,12,String(m).padStart(2,'0'),2,16,28,5);
     // idle snoopy waving + charlie
     drawCharlie(56,LANES[2]-6,true,false);
     drawSnoopy(COL_X(SNOOPY_COL)+8,LANES[1]-2,true,Math.floor(now/600)%2===0);
@@ -419,14 +421,14 @@ function render(now){
 
   // score
   const showScore=mode==='play'||flashOn||(now-overAt>3000);
-  number(18,12,score,3,14,26,4,showScore);
+  number(96,12,score,3,14,26,4,showScore);
   // woodstock = misses
-  for(let i=0;i<miss;i++)drawWoodstock(250+i*34,24,true);
-  if(mode==='over'&&newBest&&flashOn){ctx.fillStyle=INK;ctx.font='bold 13px monospace';ctx.fillText('NEW BEST!',350,30)}
-  else if(mode==='over'){ctx.fillStyle=INK;ctx.font='bold 12px monospace';ctx.fillText('BEST '+best[game],372,30)}
+  missLabel(true);for(let i=0;i<miss;i++)drawBird(250+i*24,32,true);
+  if(mode==='over'&&newBest&&flashOn){ctx.fillStyle=INK;ctx.font='bold 13px monospace';ctx.fillText('NEW BEST!',236,60)}
+  else if(mode==='over'){ctx.fillStyle=INK;ctx.font='bold 12px monospace';ctx.fillText('BEST '+best[game],236,60)}
 
   // game tag
-  ctx.fillStyle=INK;ctx.font='bold 12px monospace';ctx.fillText('GAME '+game,100,30);
+  ctx.fillStyle=INK;ctx.font='bold 12px monospace';ctx.fillText('GAME '+game,8,286);
 
   // Charlie (upper) and Lucy (lower): whoever just threw raises an arm
   const th=thrower&&now<thrower.until?thrower.who:null;
