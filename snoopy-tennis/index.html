@@ -141,8 +141,8 @@ canvas{display:block;width:100%;height:100%}
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 const W=480,H=290;
 const INK='#1c241c', GHOST='rgba(28,36,28,.09)';
-const LANES=[96,170,244];           // y centers
-const COLS=8, COL_X=c=>96+c*40;     // 0..7
+const LANES=[92,164,232];           // y centers
+const COLS=8, COL_X=c=>104+c*33;     // 0..7
 const SNOOPY_COL=7;
 const MAX_MISS=3;
 
@@ -155,7 +155,7 @@ let lane=1;                         // snoopy lane
 let balls=[];                       // {lane,col,hit}
 let returns=[];                     // visual returns {lane,from,t0}
 let swingUntil=0, pause=0, flashUntil=0, missFlash=0;
-let thrower=null;
+let thrower=null, luckyUntil=0, pows=[];
 let acc=0, last=performance.now(), tickN=0, sinceSpawn=99;
 let overAt=0, newBest=false;
 let muted=false;
@@ -204,6 +204,7 @@ function spawn(){
     const lucy=Math.random()<.35;
     balls.push({lane:l,col:0,lucy});sinceSpawn=0;
     thrower={who:lucy?'lucy':'cb',until:performance.now()+350};
+    if(lucy)luckyUntil=performance.now()+1800;
   }
 }
 
@@ -345,16 +346,24 @@ function drawCharlie(x,y,ink,throwing,lucy){
 }
 
 function drawScenery(ink){
-  // tree + nest (top-right) and doghouse (bottom-right)
   const s=ink?INK:GHOST;ctx.save();ctx.strokeStyle=s;ctx.fillStyle=s;ctx.lineCap='round';
-  ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(452,150);ctx.lineTo(452,40);ctx.moveTo(452,70);ctx.lineTo(425,40);ctx.moveTo(452,90);ctx.lineTo(474,62);ctx.stroke();
+  // trunk + the three branches Snoopy sits on
+  ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(404,268);ctx.lineTo(404,40);ctx.stroke();
+  ctx.lineWidth=6;
+  for(const y of [LANES[0]+38,LANES[1]+38]){ctx.beginPath();ctx.moveTo(404,y);ctx.lineTo(352,y);ctx.stroke()}
+  ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(404,60);ctx.lineTo(440,32);ctx.moveTo(404,120);ctx.lineTo(448,92);ctx.stroke();
+  // leaves
   ctx.lineWidth=2;
-  for(const [cx,cy] of [[428,28],[446,18],[470,26],[418,48],[476,48],[462,10]]){ctx.beginPath();ctx.ellipse(cx,cy,9,6,0,0,Math.PI*2);ctx.stroke()}
-  ctx.beginPath();ctx.ellipse(440,64,11,5,0,0,Math.PI*2);ctx.stroke();
+  for(const [cx,cy] of [[380,22],[400,14],[428,22],[448,34],[360,52],[452,100],[438,80],[462,60]]){ctx.beginPath();ctx.ellipse(cx,cy,9,5.5,0,0,Math.PI*2);ctx.stroke()}
+  // nest
+  ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(436,58,16,6,0,0,Math.PI*2);ctx.stroke();
   // doghouse
-  ctx.lineWidth=3;ctx.strokeRect(440,236,34,24);
-  ctx.beginPath();ctx.moveTo(434,238);ctx.lineTo(457,218);ctx.lineTo(480,238);ctx.closePath();ctx.stroke();
-  ctx.fillRect(450,246,14,14);
+  ctx.lineWidth=3;ctx.strokeRect(420,238,44,30);
+  ctx.beginPath();ctx.moveTo(414,240);ctx.lineTo(442,214);ctx.lineTo(470,240);ctx.closePath();ctx.stroke();
+  ctx.fillRect(434,250,16,18);
+  // ground grass + Lucy's ledge
+  ctx.lineWidth=2;ctx.beginPath();for(let x=90;x<400;x+=26){ctx.moveTo(x,276);ctx.lineTo(x+6,268);ctx.moveTo(x+6,276);ctx.lineTo(x+12,270)}ctx.stroke();
+  ctx.fillRect(0,150,34,7);ctx.beginPath();ctx.moveTo(4,157);ctx.lineTo(24,176);ctx.lineWidth=3;ctx.stroke();
   ctx.restore();
 }
 
@@ -385,7 +394,7 @@ function render(now){
     ctx.globalAlpha=.5;drawSnoopy(COL_X(SNOOPY_COL)+8,LANES[l]-2,false,false);ctx.globalAlpha=1;
     for(let c=0;c<COLS;c++)drawBall(COL_X(c),LANES[l],false);
   }
-  drawCharlie(40,LANES[0]+4,false,false);drawCharlie(40,LANES[2]-6,false,false,true);
+  drawCharlie(56,LANES[2]-6,false,false);drawCharlie(26,110,false,false,true);
   for(let i=0;i<MAX_MISS;i++)drawWoodstock(250+i*34,24,false);
   number(18,12,88,3,14,26,4,false);colon(0,0,false);
 
@@ -399,7 +408,7 @@ function render(now){
     colon(78,12,Math.floor(now/500)%2===0);
     number(90,12,String(m).padStart(2,'0'),2,16,28,5);
     // idle snoopy waving + charlie
-    drawCharlie(40,LANES[0]+4,true,false);drawCharlie(40,LANES[2]-6,true,false,true);
+    drawCharlie(56,LANES[2]-6,true,false);
     drawSnoopy(COL_X(SNOOPY_COL)+8,LANES[1]-2,true,Math.floor(now/600)%2===0);
     // hint
     ctx.fillStyle=INK;ctx.font='bold 13px monospace';ctx.textAlign='center';
@@ -421,8 +430,8 @@ function render(now){
 
   // Charlie (upper) and Lucy (lower): whoever just threw raises an arm
   const th=thrower&&now<thrower.until?thrower.who:null;
-  drawCharlie(40,LANES[0]+4,true,th==='cb');
-  drawCharlie(40,LANES[2]-6,true,th==='lucy',true);
+  drawCharlie(56,LANES[2]-6,true,th==='cb');
+  if(th==='lucy'||(luckyUntil>now))drawCharlie(26,110,true,th==='lucy',true);
 
   // snoopy
   const swing=now<swingUntil;
@@ -431,12 +440,21 @@ function render(now){
   // balls
   for(const b of balls)drawBall(COL_X(b.col),LANES[b.lane],true,b.lucy);
   // returned balls (visual)
-  returns=returns.filter(r=>now-r.t0<420);
   for(const r of returns){
-    const p=(now-r.t0)/420;
-    const x=COL_X(r.from)-(COL_X(r.from)-60)*p;
-    const y=LANES[r.lane]-Math.sin(p*Math.PI)*28;
-    drawBall(x,y,true,r.lucy);
+    if(!r.done&&now-r.t0>=520){r.done=true;pows.push({x:r.lucy?60:92,y:r.lucy?112:LANES[2]-52,t0:now,lucy:r.lucy})}
+  }
+  returns=returns.filter(r=>now-r.t0<520);
+  for(const r of returns){
+    const p=(now-r.t0)/520;
+    const tx=r.lucy?64:94,ty=r.lucy?118:LANES[2]-40;
+    const x0=COL_X(r.from),y0=LANES[r.lane];
+    drawBall(x0+(tx-x0)*p,y0+(ty-y0)*p,true,r.lucy);
+  }
+  pows=pows.filter(w=>now-w.t0<650);
+  for(const w of pows){
+    ctx.fillStyle=INK;ctx.font='900 15px Arial';ctx.save();ctx.translate(w.x,w.y);ctx.rotate(-.4);ctx.fillText('POW!',-30,-8);ctx.restore();
+    ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.beginPath();
+    for(const [dx,dy] of [[10,-14],[20,-6],[22,6],[-2,-20]]){ctx.moveTo(w.x+dx,w.y+dy);ctx.lineTo(w.x+dx*1.5,w.y+dy*1.5)}ctx.stroke();
   }
   // miss flash
   if(now<missFlash&&Math.floor(now/120)%2===0){
