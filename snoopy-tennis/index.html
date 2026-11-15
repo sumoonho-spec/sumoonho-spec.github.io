@@ -155,6 +155,7 @@ let lane=1;                         // snoopy lane
 let balls=[];                       // {lane,col,hit}
 let returns=[];                     // visual returns {lane,from,t0}
 let swingUntil=0, pause=0, flashUntil=0, missFlash=0;
+let thrower=null;
 let acc=0, last=performance.now(), tickN=0, sinceSpawn=99;
 let overAt=0, newBest=false;
 let muted=false;
@@ -179,10 +180,11 @@ const sStart=()=>{[660,880,1320].forEach((f,i)=>beep(f,.08,'square',.05,i*.09))}
 const sOver=()=>{[500,420,340,260].forEach((f,i)=>beep(f,.18,'square',.06,i*.2))};
 
 /* ---------------- game logic ---------------- */
+// one "tick" = half a step. Charlie's ball moves every 2 ticks, Lucy's (2x faster) every tick.
 function cfg(){
   return game==='A'
-    ? {base:560,min:260,step:7,maxBalls:2,gap:4}
-    : {base:430,min:180,step:6,maxBalls:3,gap:3};
+    ? {base:290,min:120,step:0.5,maxBalls:2,gap:8}
+    : {base:225,min:95,step:0.45,maxBalls:3,gap:6};
 }
 function tickMs(){const c=cfg();return Math.max(c.min,c.base-score*c.step)}
 
@@ -198,15 +200,16 @@ function spawn(){
   if(balls.length>=c.maxBalls||sinceSpawn<c.gap)return;
   if(Math.random()<.55||balls.length===0){
     let l=Math.floor(Math.random()*3);
-    // avoid placing right behind another ball in same lane
     if(balls.some(b=>b.lane===l&&b.col<3))l=(l+1)%3;
-    balls.push({lane:l,col:0});sinceSpawn=0;
+    const lucy=Math.random()<.35;
+    balls.push({lane:l,col:0,lucy});sinceSpawn=0;
+    thrower={who:lucy?'lucy':'cb',until:performance.now()+350};
   }
 }
 
 function tick(){
   tickN++;sinceSpawn++;
-  for(const b of balls)b.col++;
+  for(const b of balls){ if(b.lucy||tickN%2===0)b.col++; }
   // anything that reached past snoopy is a miss
   const gone=balls.filter(b=>b.col>SNOOPY_COL+1);
   if(gone.length){
@@ -215,7 +218,7 @@ function tick(){
     return;
   }
   spawn();
-  sTick();
+  if(tickN%2===0)sTick();
 }
 
 function gameOver(){
@@ -231,12 +234,17 @@ function doHit(){
   if(pause>0)return;
   swingUntil=now+260;
   // balls in snoopy lane at col 6 or 7 are returned
-  const target=balls.filter(b=>b.lane===lane&&b.col>=SNOOPY_COL-1).sort((a,b)=>b.col-a.col)[0];
+  const target=balls.filter(b=>b.lane===lane&&b.col>=SNOOPY_COL-(b.lucy?2:1)).sort((a,b)=>b.col-a.col)[0];
   if(target){
     balls=balls.filter(b=>b!==target);
-    returns.push({lane:target.lane,from:target.col,t0:now});
-    score=Math.min(999,score+1);sHit();
-    if(score%25===0){/* bonus jingle */beep(1500,.06,'square',.05,.12);beep(1900,.1,'square',.05,.2)}
+    returns.push({lane:target.lane,from:target.col,t0:now,lucy:target.lucy});
+    const before=score;
+    score=Math.min(999,score+(target.lucy?3:2));sHit();
+    for(const m of [200,500]){
+      if(before<m&&score>=m){ // fanfare, lost lives are cancelled
+        miss=0;[784,988,1175,1568,1175,1568].forEach((f,i)=>beep(f,.11,'square',.05,.12+i*.11));
+      }
+    }
   }else beep(500,.04,'triangle',.04);
 }
 function move(d){
@@ -314,7 +322,7 @@ function drawSnoopy(x,y,ink,swing){
   ctx.restore();
 }
 
-function drawCharlie(x,y,ink,throwing){
+function drawCharlie(x,y,ink,throwing,lucy){
   ctx.save();ctx.translate(x,y);ctx.lineCap='round';ctx.lineJoin='round';
   const s=ink?INK:GHOST,f=ink?'#a9b09b':'transparent';
   ellipse(0,-34,15,15,f,s);                       // head
@@ -328,6 +336,11 @@ function drawCharlie(x,y,ink,throwing){
   ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-8,22);ctx.lineTo(-8,46);ctx.moveTo(8,22);ctx.lineTo(8,46);ctx.stroke();
   ctx.lineWidth=4;ctx.beginPath();
   ctx.moveTo(10,-10);ctx.lineTo(throwing?30:22,throwing?-24:4);ctx.stroke(); // arm
+  if(lucy){ // Lucy: hair flips + bow instead of Charlie's curl
+    ctx.lineWidth=3;ctx.strokeStyle=s;
+    ctx.beginPath();ctx.moveTo(-15,-38);ctx.quadraticCurveTo(-26,-30,-20,-18);ctx.moveTo(15,-38);ctx.quadraticCurveTo(26,-30,20,-18);ctx.stroke();
+    ctx.fillStyle=s;ctx.beginPath();ctx.moveTo(0,-48);ctx.lineTo(-8,-54);ctx.lineTo(-8,-43);ctx.closePath();ctx.moveTo(0,-48);ctx.lineTo(8,-54);ctx.lineTo(8,-43);ctx.closePath();ctx.fill();
+  }
   ctx.restore();
 }
 
@@ -355,10 +368,10 @@ function drawWoodstock(x,y,ink){
   ctx.restore();
 }
 
-function drawBall(x,y,ink){
-  ctx.beginPath();ctx.arc(x,y,7,0,Math.PI*2);
+function drawBall(x,y,ink,lucy){
+  ctx.beginPath();ctx.arc(x,y,lucy?8.5:7,0,Math.PI*2);
   ctx.fillStyle=ink?INK:GHOST;ctx.fill();
-  if(ink){ctx.strokeStyle='#a9b09b';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(x,y,4.2,-.9,1.5);ctx.stroke()}
+  if(ink){ctx.strokeStyle='#a9b09b';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(x,y,lucy?5.5:4.2,-.9,1.5);ctx.stroke()}
 }
 
 function render(now){
@@ -372,7 +385,7 @@ function render(now){
     ctx.globalAlpha=.5;drawSnoopy(COL_X(SNOOPY_COL)+8,LANES[l]-2,false,false);ctx.globalAlpha=1;
     for(let c=0;c<COLS;c++)drawBall(COL_X(c),LANES[l],false);
   }
-  drawCharlie(40,LANES[1]-6,false,false);
+  drawCharlie(40,LANES[0]+4,false,false);drawCharlie(40,LANES[2]-6,false,false,true);
   for(let i=0;i<MAX_MISS;i++)drawWoodstock(250+i*34,24,false);
   number(18,12,88,3,14,26,4,false);colon(0,0,false);
 
@@ -386,7 +399,7 @@ function render(now){
     colon(78,12,Math.floor(now/500)%2===0);
     number(90,12,String(m).padStart(2,'0'),2,16,28,5);
     // idle snoopy waving + charlie
-    drawCharlie(40,LANES[1]-6,true,false);
+    drawCharlie(40,LANES[0]+4,true,false);drawCharlie(40,LANES[2]-6,true,false,true);
     drawSnoopy(COL_X(SNOOPY_COL)+8,LANES[1]-2,true,Math.floor(now/600)%2===0);
     // hint
     ctx.fillStyle=INK;ctx.font='bold 13px monospace';ctx.textAlign='center';
@@ -404,25 +417,26 @@ function render(now){
   else if(mode==='over'){ctx.fillStyle=INK;ctx.font='bold 12px monospace';ctx.fillText('BEST '+best[game],372,30)}
 
   // game tag
-  ctx.fillStyle=INK;ctx.font='bold 12px monospace';ctx.fillText('GAME '+game,18,52);
+  ctx.fillStyle=INK;ctx.font='bold 12px monospace';ctx.fillText('GAME '+game,100,30);
 
-  // Charlie
-  const throwing=balls.some(b=>b.col<=1)||(now<missFlash&&false);
-  drawCharlie(40,LANES[1]-6,true,throwing);
+  // Charlie (upper) and Lucy (lower): whoever just threw raises an arm
+  const th=thrower&&now<thrower.until?thrower.who:null;
+  drawCharlie(40,LANES[0]+4,true,th==='cb');
+  drawCharlie(40,LANES[2]-6,true,th==='lucy',true);
 
   // snoopy
   const swing=now<swingUntil;
   drawSnoopy(COL_X(SNOOPY_COL)+8,LANES[lane]-2,true,swing);
 
   // balls
-  for(const b of balls)drawBall(COL_X(b.col),LANES[b.lane],true);
+  for(const b of balls)drawBall(COL_X(b.col),LANES[b.lane],true,b.lucy);
   // returned balls (visual)
   returns=returns.filter(r=>now-r.t0<420);
   for(const r of returns){
     const p=(now-r.t0)/420;
     const x=COL_X(r.from)-(COL_X(r.from)-60)*p;
     const y=LANES[r.lane]-Math.sin(p*Math.PI)*28;
-    drawBall(x,y,true);
+    drawBall(x,y,true,r.lucy);
   }
   // miss flash
   if(now<missFlash&&Math.floor(now/120)%2===0){
