@@ -137,7 +137,7 @@ html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 45%,#3b
 <script>
 (()=>{
 "use strict";
-const ATLAS={"ch_ball":{"x":0,"y":370,"w":290,"h":262},"ch_toss":{"x":0,"y":370,"w":290,"h":262},"ch_idle":{"x":0,"y":370,"w":290,"h":262},"ch_pow":{"x":0,"y":370,"w":290,"h":262},"lu_up":{"x":0,"y":95,"w":230,"h":250},"lu_idle":{"x":0,"y":95,"w":230,"h":250},"lu_swing":{"x":0,"y":95,"w":230,"h":250},"sn_top_idle":{"x":560,"y":95,"w":437,"h":505},"sn_mid_idle":{"x":560,"y":95,"w":437,"h":505},"sn_bot_idle":{"x":560,"y":95,"w":437,"h":505},"sn_top_up":{"x":560,"y":95,"w":437,"h":505},"sn_top_swing":{"x":560,"y":95,"w":437,"h":505},"sn_bot_swing":{"x":560,"y":95,"w":437,"h":505},"sn_bot_up":{"x":560,"y":95,"w":437,"h":505},"sn_mid_up":{"x":560,"y":95,"w":437,"h":505},"sn_mid_swing":{"x":560,"y":95,"w":437,"h":505},"miss_txt":{"x":464,"y":4,"w":100,"h":40},"bird1":{"x":480,"y":46,"w":82,"h":71},"bird2":{"x":557,"y":46,"w":81,"h":71},"letterA":{"x":112,"y":586,"w":58,"h":44},"digits":{"ones":{"x":310,"y":0,"w":62,"h":100},"pitch":62,"h1":{"x":178,"y":0,"w":56,"h":100}},"pos":[[196.8,294.6],[198.2,133.6],[207.5,204.7],[273.6,345.0],[296.7,314.4],[296.9,375.1],[297.6,264.0],[301.0,213.4],[308.9,128.2],[344.0,311.6],[354.0,221.5],[377.3,375.0],[404.4,344.1],[405.4,129.8],[406.0,291.0],[410.5,233.4],[411.9,186.2],[460.2,382.1],[472.9,278.3],[474.7,162.5],[507.8,136.6],[508.3,378.8],[508.4,253.9],[544.9,405.1],[551.9,147.7],[611.8,276.6],[613.3,430.5],[618.7,147.8]]};
+const ATLAS={"ch_ball":{"x":0,"y":370,"w":290,"h":262},"ch_toss":{"x":0,"y":370,"w":290,"h":262},"ch_idle":{"x":0,"y":370,"w":290,"h":262},"ch_pow":{"x":0,"y":370,"w":290,"h":262},"lu_up":{"x":0,"y":95,"w":230,"h":250},"lu_idle":{"x":0,"y":95,"w":230,"h":250},"lu_swing":{"x":0,"y":95,"w":230,"h":250},"sn_top_idle":{"x":560,"y":95,"w":437,"h":505},"sn_mid_idle":{"x":560,"y":95,"w":437,"h":505},"sn_bot_idle":{"x":560,"y":95,"w":437,"h":505},"sn_top_up":{"x":560,"y":95,"w":437,"h":505},"sn_top_swing":{"x":560,"y":95,"w":437,"h":505},"sn_bot_swing":{"x":560,"y":95,"w":437,"h":505},"sn_bot_up":{"x":560,"y":95,"w":437,"h":505},"sn_mid_up":{"x":560,"y":95,"w":437,"h":505},"sn_mid_swing":{"x":560,"y":95,"w":437,"h":505},"miss_txt":{"x":464,"y":4,"w":100,"h":40},"bird1":{"x":480,"y":46,"w":82,"h":71},"bird2":{"x":557,"y":46,"w":81,"h":71},"letterA":{"x":128,"y":590,"w":38,"h":38},"digits":{"ones":{"x":310,"y":0,"w":62,"h":100},"pitch":62,"h1":{"x":178,"y":0,"w":56,"h":100}},"pos":[[196.8,294.6],[198.2,133.6],[207.5,204.7],[273.6,345.0],[296.7,314.4],[296.9,375.1],[297.6,264.0],[301.0,213.4],[308.9,128.2],[344.0,311.6],[354.0,221.5],[377.3,375.0],[404.4,344.1],[405.4,129.8],[406.0,291.0],[410.5,233.4],[411.9,186.2],[460.2,382.1],[472.9,278.3],[474.7,162.5],[507.8,136.6],[508.3,378.8],[508.4,253.9],[544.9,405.1],[551.9,147.7],[611.8,276.6],[613.3,430.5],[618.7,147.8]],"sn_sleep":{"x":560,"y":95,"w":437,"h":505},"ch_away":{"x":0,"y":370,"w":290,"h":262},"cm_idle":{"x":296,"y":372,"w":354,"h":260},"cm_throw":{"x":296,"y":372,"w":354,"h":260},"crash":{"x":787,"y":117,"w":217,"h":229}};
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 const W=997,H=632;
 ATLAS.bg={x:0,y:0,w:997,h:632};
@@ -150,6 +150,7 @@ const MAX_MISS=3;
 
 /* ---------- assets ---------- */
 const NAMES=['bg','ch_ball','ch_toss','ch_idle','ch_pow','lu_up','lu_idle','lu_swing','miss_txt','bird1','bird2',
+  'sn_sleep','ch_away','cm_idle','cm_throw','crash',
   'sn_top_idle','sn_top_up','sn_top_swing','sn_mid_idle','sn_mid_up','sn_mid_swing','sn_bot_idle','sn_bot_up','sn_bot_swing'];
 const EXT={};
 const IMG={};
@@ -167,6 +168,8 @@ let score=0,miss=0,spot=0;
 let best={A:0,B:0};try{best=JSON.parse(localStorage.getItem('snoopy-best')||'{"A":0,"B":0}')}catch(e){}
 let balls=[],serve=null,nextServe=0,pauseUntil=0,swingAt=-1e9,lucyHitAt=-1e9,overAt=0,newBest=false,chIdleUntil=0;
 let hitBuffer=0;
+let missSeq=null,deadPose=false;   // miss animation (timings measured from the original)
+const MS={crash:530,count:930,sleep:2100,walk:2900,throw:4100,end:5300};
 let paused=false,pausedAt=0,pausedTotal=0;
 const gnow=()=>(paused?pausedAt:performance.now())-pausedTotal;
 let muted=false;try{muted=localStorage.getItem('snoopy-mute')==='1'}catch(e){}
@@ -196,10 +199,10 @@ const stepL=()=>stepC()*0.55;
 /* ---------- game ---------- */
 function start(g){
   setPause(false);
-  game=g;mode='play';score=0;miss=0;spot=0;balls=[];serve=null;newBest=false;
+  game=g;mode='play';score=0;miss=0;spot=0;balls=[];serve=null;newBest=false;missSeq=null;deadPose=false;
   pauseUntil=gnow()+900;nextServe=pauseUntil+400;sStart();
 }
-function toClock(){setPause(false);mode='clock';balls=[];serve=null}
+function toClock(){setPause(false);mode='clock';balls=[];serve=null;missSeq=null;deadPose=false}
 function setPause(on){
   if(on===paused)return;
   if(on){if(mode!=='play')return;paused=true;pausedAt=performance.now()}
@@ -216,9 +219,19 @@ function beginServe(now){
 function launchCharlie(now,lane){
   balls.push({type:'C',lane,path:CHARLIE[lane],i:0,ret:false,next:now+stepC()});
 }
+// Missed: the ball vanishes, CRASH! in the tree, a bird is added, Snoopy naps on his doghouse,
+// Charlie walks out and throws his racket, then play resumes.
 function doMiss(now){
-  miss++;sMiss();balls=[];serve=null;pauseUntil=now+1300;nextServe=pauseUntil+700;
-  if(miss>=MAX_MISS)gameOver();
+  balls=[];serve=null;hitBuffer=0;missSeq={t0:now,counted:false};
+  pauseUntil=now+MS.end;nextServe=pauseUntil+700;
+  beep(160,.3,'sawtooth',.07,MS.crash/1000);beep(110,.35,'sawtooth',.07,MS.crash/1000+.16);
+}
+function stepMiss(now){
+  const e=now-missSeq.t0;
+  if(!missSeq.counted&&e>=MS.count){missSeq.counted=true;miss++;beep(700,.06,'square',.04)}
+  if(!missSeq.zz&&e>=MS.sleep){missSeq.zz=true;[392,330,262].forEach((f,i)=>beep(f,.16,'triangle',.05,i*.18))}
+  if(!missSeq.thr&&e>=MS.throw){missSeq.thr=true;beep(220,.08,'square',.05);beep(180,.12,'square',.05,.09)}
+  if(e>=MS.end){missSeq=null;if(miss>=MAX_MISS){deadPose=true;gameOver()}}
 }
 function showBest(){const el=document.getElementById('best');if(el)el.innerHTML='<b>BEST</b>A '+(best.A||0)+' &nbsp;·&nbsp; B '+(best.B||0)}
 function gameOver(){
@@ -249,13 +262,14 @@ function tryHit(now){
   return true;
 }
 function move(d){
-  if(mode!=='play'||paused)return;
+  if(mode!=='play'||paused||missSeq)return;
   const n=Math.max(0,Math.min(2,spot+d));
   if(n!==spot){spot=n;hitBuffer=0;beep(420,.025,'square',.03)}
 }
 
 function update(now){
   if(mode!=='play'||paused)return;
+  if(missSeq){stepMiss(now);return}
   if(now<pauseUntil)return;
   // Charlie's serve animation: toss -> POW (ball leaves) -> rest
   if(serve){
@@ -280,6 +294,25 @@ function update(now){
   }
 }
 
+/* ---------- LCD glass: soft blotches, fine grain and darker edges, like an old unit ---------- */
+const grime=(()=>{
+  const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
+  let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
+  g.fillStyle='#fff';g.fillRect(0,0,W,H);
+  for(const [cw,ch,lo,hi] of [[9,6,226,255],[24,15,236,255]]){        // two scales of soft mottling
+    const t=document.createElement('canvas');t.width=cw;t.height=ch;const tg=t.getContext('2d');
+    for(let y=0;y<ch;y++)for(let x=0;x<cw;x++){const v=Math.round(lo+rnd()*(hi-lo));tg.fillStyle=`rgb(${v},${v},${v-2})`;tg.fillRect(x,y,1,1)}
+    g.globalCompositeOperation='multiply';g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(t,0,0,W,H);
+  }
+  const id=g.getImageData(0,0,W,H),d=id.data;                         // fine grain
+  for(let i=0;i<d.length;i+=4){const n=(rnd()-.5)*14;d[i]+=n;d[i+1]+=n;d[i+2]+=n}
+  g.globalCompositeOperation='source-over';g.putImageData(id,0,0);
+  const v=g.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,W*.62);           // darker corners
+  v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(40,40,30,.16)');
+  g.fillStyle=v;g.fillRect(0,0,W,H);
+  return c;
+})();
+
 /* ---------- drawing ---------- */
 function spr(n){const a=ATLAS[n],im=IMG[n];if(im&&im.complete)ctx.drawImage(im,a.x,a.y,a.w,a.h)}
 function digits(val,showZeroAlone=true,x0=0){
@@ -303,21 +336,29 @@ function render(now){
   // Lucy (appears when she is about to hit / hitting)
   const lucyHitting=now-lucyHitAt<420;
   const lucyNear=balls.some(b=>b.ret&&b.i>=b.path.length-2);
-  if(lucyHitting)spr('lu_swing');
-  else if(lucyNear)spr('lu_up');
+  const me=missSeq?now-missSeq.t0:(deadPose?1e9:-1);   // time into the miss animation
+  if(me<0){if(lucyHitting)spr('lu_swing');else if(lucyNear)spr('lu_up')}
 
   // Charlie
-  let ch='ch_ball';
-  if(serve){const a=now-serve.t0;ch=a<350?'ch_ball':a<700?'ch_toss':'ch_pow'}
-  else if(now<chIdleUntil)ch='ch_idle';
-  spr(ch);
+  if(me>=MS.walk)spr('ch_away');   // Charlie in the middle is drawn after Snoopy (his racket reaches into that area)
+  else{
+    let ch='ch_ball';
+    if(serve){const a=now-serve.t0;ch=a<350?'ch_ball':a<700?'ch_toss':'ch_pow'}
+    else if(now<chIdleUntil)ch='ch_idle';
+    spr(ch);
+  }
   // GAME A / GAME B label: the word "GAME" is original art, the letter is drawn to match
   ctx.save();ctx.fillStyle='#262b26';ctx.font='bold 41px Arial, Helvetica, sans-serif';ctx.textBaseline='alphabetic';ctx.scale(.88,1);ctx.fillText(game,136/.88,623);ctx.restore()
 
   // Snoopy
-  const age=now-swingAt;
-  const pose=age<120?'up':age<420?'swing':'idle';
-  spr(`sn_${SPOT[spot]}_${pose}`);
+  if(me>=MS.sleep)spr('sn_sleep');
+  else{
+    const age=now-swingAt;
+    const pose=me>=0?'idle':age<120?'up':age<420?'swing':'idle';
+    spr(`sn_${SPOT[spot]}_${pose}`);
+  }
+  if(me>=MS.crash&&me<MS.walk)spr('crash');
+  if(me>=MS.walk)spr(me>=MS.throw?'cm_throw':'cm_idle');
 
   // misses
   if(miss>0){
@@ -343,6 +384,7 @@ function render(now){
     const blink=mode==='over'&&now-overAt<3500&&Math.floor(now/260)%2===1;
     if(!blink)digits(score);
   }
+  ctx.globalCompositeOperation='multiply';ctx.drawImage(grime,0,0);ctx.globalCompositeOperation='source-over';
   if(paused){
     ctx.fillStyle='rgba(20,24,20,.35)';ctx.fillRect(0,0,W,H);
     if(Math.floor(performance.now()/600)%2===0){
@@ -355,7 +397,7 @@ function render(now){
 /* ---------- loop ---------- */
 function loop(){const now=gnow();update(now);render(now);requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
-if(location.hash==='#debug')window.__st=()=>({mode,score,miss,spot,balls:balls.map(b=>({lane:b.lane,i:b.i,n:b.path.length,ret:b.ret,type:b.type}))});
+if(location.hash==='#debug')window.__st=()=>({mode,score,miss,spot,ms:missSeq?gnow()-missSeq.t0:-1,balls:balls.map(b=>({lane:b.lane,i:b.i,n:b.path.length,ret:b.ret,type:b.type}))});
 
 /* ---------- input ---------- */
 const $=id=>document.getElementById(id);
