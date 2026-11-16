@@ -25,14 +25,50 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;touch-action
 #ctrl{position:fixed;top:calc(10px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));display:flex;gap:10px;z-index:6}
 #ctrl button{width:48px;height:48px;border-radius:50%;border:3px solid var(--purple);background:rgba(43,39,48,.85);color:#fff;font:700 20px/1 Arial,sans-serif;cursor:pointer;padding:0;touch-action:none}
 #ctrl button.on{background:var(--purple-d)}
-#touchbar{position:fixed;left:0;right:0;bottom:0;padding:10px 14px calc(14px + env(safe-area-inset-bottom));display:none;gap:12px;z-index:5}
-#touchbar button{flex:1;height:92px;border-radius:20px;border:4px solid var(--purple);background:radial-gradient(circle at 35% 30%,#f27a72,var(--red) 55%,var(--red-d));color:#fff;font:900 18px Arial;box-shadow:0 5px 0 var(--purple-d);touch-action:none}
-#touchbar button.on{transform:translateY(4px);box-shadow:0 1px 0 var(--purple-d)}
-#touchbar .col{flex:1;display:flex;flex-direction:column;gap:10px}
-#touchbar .col button{height:41px;font-size:15px}
-#touchbar button{white-space:nowrap;padding:0 4px}
-#touchbar #tHit{flex:1.4}
-#cv.compact{border:6px solid var(--purple);border-radius:14px;box-shadow:0 0 0 3px var(--purple-d)}
+
+/* ===== portrait: the device stood upright ===== */
+#shell{display:none;position:fixed;inset:0;z-index:4;
+  padding:calc(env(safe-area-inset-top) + 8px) calc(env(safe-area-inset-right) + 8px) calc(env(safe-area-inset-bottom) + 8px) calc(env(safe-area-inset-left) + 8px);
+  background:linear-gradient(160deg,#ad8dc6 0%,#9474b0 45%,#7f5f9c 100%)}
+#face{height:100%;display:flex;flex-direction:column;border-radius:26px;padding:10px 14px 14px;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px),
+    linear-gradient(170deg,#f2e6b6 0%,#e0cc8b 48%,#cdb571 100%);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.7),inset 0 -3px 8px rgba(80,60,20,.25),0 0 0 2px #c3ab6a,0 3px 10px rgba(40,20,60,.35)}
+#top{display:flex;align-items:center;justify-content:space-between;min-height:46px;margin-bottom:8px}
+#best{font:800 12px/1.25 "Helvetica Neue",Arial,sans-serif;letter-spacing:1.2px;color:#5a4a28;text-shadow:0 1px 0 rgba(255,255,255,.6)}
+#best b{display:block;font-size:10px;letter-spacing:2px;color:#8a7440}
+#ctrl.inline{position:static;gap:8px}
+#ctrl.inline button{width:40px;height:40px;border:0;color:#5a4a28;font-size:15px;
+  background:linear-gradient(#efe3b2,#d2bc7b);box-shadow:0 2px 0 #a88f4e,inset 0 1px 0 rgba(255,255,255,.8),0 0 0 1px #b39a5a}
+#ctrl.inline button.on{transform:translateY(2px);box-shadow:0 0 0 #a88f4e,inset 0 1px 3px rgba(0,0,0,.25),0 0 0 1px #b39a5a;background:linear-gradient(#d9c68a,#c9b16e)}
+
+#bezel{position:relative;border-radius:12px;padding:24px 10px 24px;
+  background:linear-gradient(180deg,#f1f1f4 0%,#d3d3d9 40%,#bcbcc4 100%);
+  box-shadow:inset 0 0 0 2px #fafafc,inset 0 0 0 3px #a3a3ac,0 3px 0 #9a8650,0 6px 14px rgba(60,40,10,.25)}
+#bezel .lbl{position:absolute;left:12px;right:12px;height:2px;background:#2a2a2a;display:flex;justify-content:center;align-items:center}
+#bezel .lbl span{background:#e2e2e6;padding:0 9px;font:900 11px/1 "Arial Black",Arial,sans-serif;letter-spacing:1.6px;color:#222}
+#bezel .lbl.t{top:12px}#bezel .lbl.b{bottom:12px}
+#bezel .lbl.b span{background:#c4c4cb;font:700 10px/1 Arial,sans-serif;letter-spacing:1.2px}
+#lcdframe{background:linear-gradient(#a184bb,#8f6fab);border-radius:8px;padding:7px;box-shadow:inset 0 0 0 2px #7a5a96,inset 0 2px 3px rgba(0,0,0,.25)}
+#lcdSlot canvas{position:static!important;display:block;width:100%!important;height:auto!important;aspect-ratio:997/632;border:2px solid #1d1b19;border-radius:2px;box-shadow:inset 0 0 8px rgba(0,0,0,.4)}
+
+#pad{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;padding-top:6px}
+.pills{display:flex;justify-content:center;gap:clamp(18px,6vw,34px)}
+.pw,.bw{display:flex;flex-direction:column;align-items:center;gap:6px}
+.pw i,.bw i{font:800 11px/1 "Helvetica Neue",Arial,sans-serif;font-style:normal;letter-spacing:1px;color:#3d3220;text-shadow:0 1px 0 rgba(255,255,255,.55)}
+.pillbtn{width:62px;height:28px;border-radius:14px;padding:0;cursor:pointer;touch-action:none;
+  border:4px solid #9b78b4;background:linear-gradient(#fbfbfd,#c7c7cf 60%,#a9a9b3);
+  box-shadow:0 3px 0 #6f5489,0 5px 8px rgba(60,40,10,.25),inset 0 1px 0 #fff}
+.pillbtn.on{transform:translateY(3px);box-shadow:0 0 0 #6f5489,0 1px 2px rgba(60,40,10,.2),inset 0 2px 3px rgba(0,0,0,.2)}
+.main{display:flex;align-items:center;justify-content:space-between;padding:0 clamp(6px,4vw,22px)}
+.dpad{display:flex;flex-direction:column;gap:clamp(6px,1.6vh,14px)}
+.red{--s:clamp(66px,10.5vh,86px);width:var(--s);height:var(--s);border-radius:50%;padding:0;cursor:pointer;touch-action:none;
+  border:6px solid #9b78b4;
+  background:radial-gradient(circle at 34% 28%,#ffb3aa 0%,#f0645a 22%,#d63a31 55%,#9e1f19 100%);
+  box-shadow:0 0 0 2px #7b5a98,0 5px 0 #6a4e85,0 9px 14px rgba(60,30,10,.35),inset 0 -5px 8px rgba(80,0,0,.35),inset 0 3px 5px rgba(255,255,255,.35)}
+.red.big{--s:clamp(92px,15vh,124px)}
+.red.on{transform:translateY(4px);box-shadow:0 0 0 2px #7b5a98,0 1px 0 #6a4e85,0 2px 4px rgba(60,30,10,.3),inset 0 -2px 6px rgba(80,0,0,.4),inset 0 3px 7px rgba(0,0,0,.25)}
 </style>
 </head>
 <body>
@@ -49,11 +85,28 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;touch-action
 </div>
 <canvas id="cv" width="997" height="632"></canvas>
 <div id="ctrl"><button id="pause" aria-label="pause">❚❚</button><button id="snd" aria-label="sound">🔊</button></div>
-<div id="touchbar">
-  <div class="col"><button id="tUp">▲ UP</button><button id="tDown">▼ DOWN</button></div>
-  <button id="tHit">HIT!</button>
-  <div class="col"><button id="tA">GAME A</button><button id="tB">GAME B</button></div>
-</div>
+<div id="shell"><div id="face">
+  <div id="top"><div id="best"></div><div id="ctrlSlot"></div></div>
+  <div id="bezel">
+    <div class="lbl t"><span>SNOOPY TENNIS</span></div>
+    <div id="lcdframe"><div id="lcdSlot"></div></div>
+    <div class="lbl b"><span>WIDE SCREEN</span></div>
+  </div>
+  <div id="pad">
+    <div class="pills">
+      <div class="pw"><button class="pillbtn" id="tA" aria-label="GAME A"></button><i>GAME A</i></div>
+      <div class="pw"><button class="pillbtn" id="tB" aria-label="GAME B"></button><i>GAME B</i></div>
+      <div class="pw"><button class="pillbtn" id="tT" aria-label="TIME"></button><i>TIME</i></div>
+    </div>
+    <div class="main">
+      <div class="bw"><button class="red big" id="tHit" aria-label="HIT"></button><i>HIT</i></div>
+      <div class="dpad">
+        <div class="bw"><i>UP ▲</i><button class="red" id="tUp" aria-label="UP"></button></div>
+        <div class="bw"><button class="red" id="tDown" aria-label="DOWN"></button><i>DOWN ▼</i></div>
+      </div>
+    </div>
+  </div>
+</div></div>
 
 <script>
 (()=>{
@@ -141,9 +194,11 @@ function doMiss(now){
   miss++;sMiss();balls=[];serve=null;pauseUntil=now+1300;nextServe=pauseUntil+700;
   if(miss>=MAX_MISS)gameOver();
 }
+function showBest(){const el=document.getElementById('best');if(el)el.innerHTML='<b>BEST</b>A '+(best.A||0)+' &nbsp;·&nbsp; B '+(best.B||0)}
 function gameOver(){
   mode='over';overAt=gnow();sOver();
   if(score>(best[game]||0)){best[game]=score;newBest=true;try{localStorage.setItem('snoopy-best',JSON.stringify(best))}catch(e){}}
+  showBest();
 }
 function addScore(n){
   const before=score;score=Math.min(999,score+n);
@@ -278,7 +333,7 @@ if(location.hash==='#debug')window.__st=()=>({mode,score,miss,spot,balls:balls.m
 /* ---------- input ---------- */
 const $=id=>document.getElementById(id);
 function press(el,fn){
-  const on=e=>{e.preventDefault();el.classList.add('on');fn()};
+  const on=e=>{e.preventDefault();el.classList.add('on');try{navigator.vibrate&&navigator.vibrate(8)}catch(_){}fn()};
   const off=()=>el.classList.remove('on');
   el.addEventListener('pointerdown',on);
   ['pointerup','pointerleave','pointercancel'].forEach(ev=>el.addEventListener(ev,off));
@@ -286,7 +341,7 @@ function press(el,fn){
 const bind=(ids,fn)=>ids.forEach(i=>press($(i),fn));
 bind(['up','tUp'],()=>move(-1));bind(['down','tDown'],()=>move(1));
 bind(['hit','tHit'],doHit);bind(['bA','tA'],()=>start('A'));bind(['bB','tB'],()=>start('B'));
-press($('bT'),toClock);
+bind(['bT','tT'],toClock);
 press($('pause'),togglePause);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)setPause(true)});
 const KEYS={ArrowUp:()=>move(-1),KeyW:()=>move(-1),ArrowDown:()=>move(1),KeyS:()=>move(1),
@@ -297,26 +352,28 @@ $('snd').addEventListener('click',()=>{muted=!muted;$('snd').textContent=muted?'
   try{localStorage.setItem('snoopy-mute',muted?'1':'0')}catch(e){}if(!muted)beep(880,.08)});
 
 /* ---------- layout ---------- */
-const stage=$('stage'),bar=$('touchbar');
+const stage=$('stage'),shell=$('shell'),ctrl=$('ctrl');
 const LCD={x:564,y:322};
 function fit(){
   const de=document.documentElement,vv=window.visualViewport;
   const vw=Math.min(innerWidth,de.clientWidth||innerWidth,vv?vv.width:innerWidth),vh=Math.min(innerHeight,vv?vv.height:innerHeight);
-  const compact=vw<720&&vh>vw;                 // phone held upright: big LCD + touch buttons
-  bar.style.display=compact?'flex':'none';
-  cv.classList.toggle('compact',compact);
+  const compact=vw<720&&vh>vw;                 // phone held upright: the device stood on its side
   if(compact){
-    stage.style.display='none';
-    const w=vw-24,h=w*H/W;
-    cv.style.width=w+'px';cv.style.height=h+'px';cv.style.left='12px';cv.style.top=(Math.max(12,(vh-170-h)/2))+'px';
+    stage.style.display='none';shell.style.display='block';
+    if(cv.parentNode!==$('lcdSlot'))$('lcdSlot').appendChild(cv);
+    if(ctrl.parentNode!==$('ctrlSlot')){$('ctrlSlot').appendChild(ctrl);ctrl.classList.add('inline')}
+    cv.removeAttribute('style');
   }else{
-    stage.style.display='block';
+    shell.style.display='none';stage.style.display='block';
+    if(cv.parentNode!==document.body){document.body.insertBefore(cv,ctrl.parentNode===document.body?ctrl:shell)}
+    if(ctrl.parentNode!==document.body){document.body.insertBefore(ctrl,shell);ctrl.classList.remove('inline')}
     const s=Math.min(vw/2123,vh/1302)*0.97;
     const L=(vw-2123*s)/2,T=(vh-1302*s)/2;
     stage.style.transform=`scale(${s})`;stage.style.left=L+'px';stage.style.top=T+'px';
     cv.style.width=W*s+'px';cv.style.height=H*s+'px';cv.style.left=(L+LCD.x*s)+'px';cv.style.top=(T+LCD.y*s)+'px';
   }
 }
+showBest();
 addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,250));
 if(window.visualViewport)visualViewport.addEventListener('resize',fit);fit();
 
