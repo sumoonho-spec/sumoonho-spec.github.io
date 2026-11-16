@@ -45,6 +45,9 @@ html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 45%,#3b
 #top{display:flex;align-items:center;justify-content:space-between;min-height:46px;margin-bottom:8px}
 #best{font:800 12px/1.25 "Helvetica Neue",Arial,sans-serif;letter-spacing:1.2px;color:#5a4a28;text-shadow:0 1px 0 rgba(255,255,255,.6)}
 #best b{display:block;font-size:10px;letter-spacing:2px;color:#8a7440}
+/* version printed on the faceplate, like the "Nintendo" lettering under the logo */
+#ver{position:absolute;left:95px;top:118px;width:255px;text-align:center;z-index:3;pointer-events:none;font:700 38px/1 "Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:1px;color:#2a2622;opacity:.86;text-shadow:0 1px 0 rgba(255,255,255,.35)}
+#best i{display:block;font:700 9px/1.4 "Helvetica Neue",Arial,sans-serif;font-style:normal;letter-spacing:1px;color:#8a7440}
 /* built-in controls on the upright device: small pills like GAME A/B/TIME */
 #upctl{display:flex;gap:clamp(6px,2.4vw,12px)}
 .uc{display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -96,6 +99,7 @@ html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 45%,#3b
   <button class="hit pill" id="bT"  aria-label="TIME"    style="left:1780px;top:432px;width:140px;height:60px"></button>
   <button class="hit" id="up"   aria-label="UP"   style="left:135px;top:680px;width:192px;height:192px"></button>
   <button class="hit" id="down" aria-label="DOWN" style="left:135px;top:890px;width:192px;height:192px"></button>
+  <div id="ver"></div>
   <div id="devctl">
     <div class="dc"><button class="dpill" id="dRestart" aria-label="reset"></button><span>RESET</span></div>
     <div class="dc"><button class="dpill" id="dPause" aria-label="pause"></button><span>PAUSE</span><i class="dled" data-led="pause"></i></div>
@@ -241,7 +245,9 @@ function stepMiss(now){
   if(!missSeq.thr&&e>=MS.throw){missSeq.thr=true;beep(220,.08,'square',.05);beep(180,.12,'square',.05,.09)}
   if(e>=MS.end){missSeq=null;if(miss>=MAX_MISS){deadPose=true;gameOver()}}
 }
-function showBest(){const el=document.getElementById('best');if(el)el.innerHTML='<b>BEST</b>A '+(best.A||0)+' &nbsp;·&nbsp; B '+(best.B||0)}
+const APP_VERSION='2.2';
+function showBest(){const el=document.getElementById('best');if(el)el.innerHTML='<b>BEST</b>A '+(best.A||0)+' &nbsp;·&nbsp; B '+(best.B||0)+'<i>v'+APP_VERSION+'</i>'}
+document.getElementById('ver').textContent='v'+APP_VERSION;
 function gameOver(){
   mode='over';overAt=gnow();sOver();
   if(score>(best[game]||0)){best[game]=score;newBest=true;try{localStorage.setItem('snoopy-best',JSON.stringify(best))}catch(e){}}
