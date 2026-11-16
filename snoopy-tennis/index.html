@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#2b2730">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="스누피 테니스">
+<title>스누피 테니스</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#2b2730;--purple:#9b78b4;--purple-d:#6f5489;--red:#e0564f;--red-d:#b53a35}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;touch-action:manipulation;overscroll-behavior:none}
+#stage{position:absolute;left:0;top:0;width:2123px;height:1302px;transform-origin:0 0;border-radius:36px;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.55)}
+#device{position:absolute;left:0;top:0;width:2123px;height:1302px;display:block;pointer-events:none}
+#cv{position:absolute;display:block;image-rendering:auto;z-index:2}
+.hit{position:absolute;z-index:3;border:0;padding:0;background:transparent;cursor:pointer;border-radius:50%}
+.hit.pill{border-radius:30px}
+.hit.on{background:rgba(0,0,0,.22)}
+#snd{position:absolute;left:2040px;top:48px;width:70px;height:70px;border-radius:50%;border:0;background:rgba(0,0,0,.28);font-size:38px;z-index:3;cursor:pointer;color:#fff;padding:0}
+#touchbar{position:fixed;left:0;right:0;bottom:0;padding:10px 14px calc(14px + env(safe-area-inset-bottom));display:none;gap:12px;z-index:5}
+#touchbar button{flex:1;height:92px;border-radius:20px;border:4px solid var(--purple);background:radial-gradient(circle at 35% 30%,#f27a72,var(--red) 55%,var(--red-d));color:#fff;font:900 18px Arial;box-shadow:0 5px 0 var(--purple-d);touch-action:none}
+#touchbar button.on{transform:translateY(4px);box-shadow:0 1px 0 var(--purple-d)}
+#touchbar .col{flex:1;display:flex;flex-direction:column;gap:10px}
+#touchbar .col button{height:41px;font-size:15px}
+#touchbar #tHit{flex:1.4}
+#cv.compact{border:6px solid var(--purple);border-radius:14px;box-shadow:0 0 0 3px var(--purple-d)}
+</style>
+</head>
+<body>
+<div id="stage">
+  <img id="device" src="assets/device.jpg" alt="" draggable="false">
+  <button class="hit pill" id="bA"  aria-label="GAME A"  style="left:1780px;top:142px;width:140px;height:60px"></button>
+  <button class="hit pill" id="bB"  aria-label="GAME B"  style="left:1780px;top:286px;width:140px;height:60px"></button>
+  <button class="hit pill" id="bT"  aria-label="TIME"    style="left:1780px;top:432px;width:140px;height:60px"></button>
+  <button class="hit" id="up"   aria-label="UP"   style="left:1774px;top:710px;width:192px;height:192px"></button>
+  <button class="hit" id="down" aria-label="DOWN" style="left:1774px;top:920px;width:192px;height:192px"></button>
+  <button class="hit" id="hit"  aria-label="HIT"  style="left:140px;top:808px;width:192px;height:192px"></button>
+  <button id="snd" aria-label="sound">🔊</button>
+</div>
+<canvas id="cv" width="997" height="632"></canvas>
+<div id="touchbar">
+  <div class="col"><button id="tUp">▲ UP</button><button id="tDown">▼ DOWN</button></div>
+  <button id="tHit">HIT!</button>
+  <div class="col"><button id="tA">GAME A</button><button id="tB">GAME B</button></div>
+</div>
+
+<script>
+(()=>{
+"use strict";
+const ATLAS={"ch_ball":{"x":0,"y":370,"w":290,"h":262},"ch_toss":{"x":0,"y":370,"w":290,"h":262},"ch_idle":{"x":0,"y":370,"w":290,"h":262},"ch_pow":{"x":0,"y":370,"w":290,"h":262},"lu_up":{"x":0,"y":95,"w":230,"h":250},"lu_idle":{"x":0,"y":95,"w":230,"h":250},"lu_swing":{"x":0,"y":95,"w":230,"h":250},"sn_top_idle":{"x":560,"y":95,"w":437,"h":505},"sn_mid_idle":{"x":560,"y":95,"w":437,"h":505},"sn_bot_idle":{"x":560,"y":95,"w":437,"h":505},"sn_top_up":{"x":560,"y":95,"w":437,"h":505},"sn_top_swing":{"x":560,"y":95,"w":437,"h":505},"sn_bot_swing":{"x":560,"y":95,"w":437,"h":505},"sn_bot_up":{"x":560,"y":95,"w":437,"h":505},"sn_mid_up":{"x":560,"y":95,"w":437,"h":505},"sn_mid_swing":{"x":560,"y":95,"w":437,"h":505},"miss_txt":{"x":464,"y":4,"w":100,"h":40},"bird1":{"x":480,"y":46,"w":82,"h":71},"bird2":{"x":557,"y":46,"w":81,"h":71},"letterA":{"x":112,"y":586,"w":58,"h":44},"digits":{"ones":{"x":310,"y":0,"w":62,"h":100},"pitch":62,"h1":{"x":178,"y":0,"w":56,"h":100}},"pos":[[196.8,294.6],[198.2,133.6],[207.5,204.7],[273.6,345.0],[296.7,314.4],[296.9,375.1],[297.6,264.0],[301.0,213.4],[308.9,128.2],[344.0,311.6],[354.0,221.5],[377.3,375.0],[404.4,344.1],[405.4,129.8],[406.0,291.0],[410.5,233.4],[411.9,186.2],[460.2,382.1],[472.9,278.3],[474.7,162.5],[507.8,136.6],[508.3,378.8],[508.4,253.9],[544.9,405.1],[551.9,147.7],[611.8,276.6],[613.3,430.5],[618.7,147.8]]};
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const W=997,H=632;
+ATLAS.bg={x:0,y:0,w:997,h:632};
+const POS=ATLAS.pos;                           // the 28 fixed ball positions of the LCD
+// ball lanes (indexes into POS). Charlie's balls fly slowly, Lucy's twice as fast.
+const CHARLIE=[[6,10,16,19,24,27],[3,9,14,18,22,25],[5,11,17,23,26]];   // top, middle, bottom
+const LUCY   =[[1,8,13,20,27],[2,7,15,22,25],[0,4,12,21,26]];
+const SPOT=['top','mid','bot'];
+const MAX_MISS=3;
+
+/* ---------- assets ---------- */
+const NAMES=['bg','ch_ball','ch_toss','ch_idle','ch_pow','lu_up','lu_idle','lu_swing','miss_txt','bird1','bird2',
+  'sn_top_idle','sn_top_up','sn_top_swing','sn_mid_idle','sn_mid_up','sn_mid_swing','sn_bot_idle','sn_bot_up','sn_bot_swing'];
+const EXT={};
+const IMG={};
+let loaded=0,total=NAMES.length+11;
+function load(key,src){const im=new Image();im.onload=()=>{loaded++};im.onerror=()=>{loaded++};im.src=src;IMG[key]=im}
+NAMES.forEach(n=>load(n,`assets/${n}.${EXT[n]||'webp'}`));
+for(let i=0;i<10;i++)load('d'+i,`assets/d${i}.png`);
+load('h1','assets/h1.png');
+const ready=()=>loaded>=total;
+
+/* ---------- state ---------- */
+let mode='clock';                 // clock | play | over
+let game='A';
+let score=0,miss=0,spot=0;
+let best={A:0,B:0};try{best=JSON.parse(localStorage.getItem('snoopy-best')||'{"A":0,"B":0}')}catch(e){}
+let balls=[],serve=null,nextServe=0,pauseUntil=0,swingAt=-1e9,lucyHitAt=-1e9,overAt=0,newBest=false,chIdleUntil=0;
+let muted=false;try{muted=localStorage.getItem('snoopy-mute')==='1'}catch(e){}
+
+/* ---------- audio ---------- */
+let ac=null;
+function beep(f,d,type='square',v=.05,delay=0){
+  if(muted)return;
+  try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();
+    const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+delay;
+    o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d+.02);}catch(e){}
+}
+const sTick=()=>beep(300,.03,'square',.02);
+const sHit=()=>{beep(1300,.07);beep(1700,.09,'square',.05,.07)};
+const sMiss=()=>{beep(150,.35,'sawtooth',.07);beep(110,.35,'sawtooth',.07,.18)};
+const sStart=()=>{[660,880,1320].forEach((f,i)=>beep(f,.08,'square',.05,i*.09))};
+const sOver=()=>{[500,420,340,260].forEach((f,i)=>beep(f,.18,'square',.06,i*.2))};
+const sFan=()=>[784,988,1175,1568,1175,1568].forEach((f,i)=>beep(f,.11,'square',.05,i*.11));
+
+/* ---------- timing (measured from the recordings) ---------- */
+// Charlie's ball: ~1.5 s per position, a bit quicker as the score rises. Lucy's ball is twice as fast.
+function cfg(){return game==='A'?{c:1550,min:900,k:1.2,max:2,gap:3200}:{c:1200,min:650,k:1.0,max:3,gap:2300}}
+const stepC=()=>{const c=cfg();return Math.max(c.min,c.c-score*c.k)};
+const stepL=()=>stepC()*0.55;
+
+/* ---------- game ---------- */
+function start(g){
+  game=g;mode='play';score=0;miss=0;spot=0;balls=[];serve=null;newBest=false;
+  pauseUntil=performance.now()+900;nextServe=pauseUntil+400;sStart();
+}
+function toClock(){mode='clock';balls=[];serve=null}
+const rnd=n=>Math.floor(Math.random()*n);
+
+function beginServe(now){
+  serve={t0:now,lane:rnd(3),launched:false};
+  nextServe=now+cfg().gap;
+}
+function launchCharlie(now,lane){
+  balls.push({type:'C',lane,path:CHARLIE[lane],i:0,ret:false,next:now+stepC()});
+}
+function doMiss(now){
+  miss++;sMiss();balls=[];serve=null;pauseUntil=now+1300;nextServe=pauseUntil+700;
+  if(miss>=MAX_MISS)gameOver();
+}
+function gameOver(){
+  mode='over';overAt=performance.now();sOver();
+  if(score>(best[game]||0)){best[game]=score;newBest=true;try{localStorage.setItem('snoopy-best',JSON.stringify(best))}catch(e){}}
+}
+function addScore(n){
+  const before=score;score=Math.min(999,score+n);
+  for(const m of [200,500])if(before<m&&score>=m){miss=0;sFan()}
+}
+function doHit(){
+  const now=performance.now();
+  if(mode!=='play'){start(game);return}
+  if(now<pauseUntil)return;
+  swingAt=now;
+  const b=balls.find(b=>!b.ret&&b.lane===spot&&b.i===b.path.length-1);
+  if(b){
+    addScore(b.type==='C'?2:3);sHit();
+    // the return flies back along Lucy's lane at the same height
+    b.type=b.type; b.ret=true; b.path=LUCY[b.lane].slice().reverse(); b.i=0; b.next=now+stepL();
+  }else beep(500,.04,'triangle',.04);
+}
+function move(d){
+  if(mode!=='play')return;
+  const n=Math.max(0,Math.min(2,spot+d));
+  if(n!==spot){spot=n;beep(420,.025,'square',.03)}
+}
+
+function update(now){
+  if(mode!=='play')return;
+  if(now<pauseUntil)return;
+  // Charlie's serve animation: toss -> POW (ball leaves) -> rest
+  if(serve){
+    const a=now-serve.t0;
+    if(!serve.launched&&a>=700){serve.launched=true;launchCharlie(now,serve.lane);beep(900,.05,'square',.05);chIdleUntil=now+1100}
+    if(a>=1300)serve=null;
+  }else if(balls.length<cfg().max&&now>=nextServe)beginServe(now);
+
+  for(const b of balls.slice()){
+    if(now<b.next)continue;
+    if(!b.ret){
+      if(b.i<b.path.length-1){b.i++;b.next=now+(b.type==='C'?stepC():stepL());sTick()}
+      else{doMiss(now);return}                       // ball sat at Snoopy's spot and nobody hit it
+    }else{
+      if(b.i<b.path.length-1){b.i++;b.next=now+stepL();sTick()}
+      else{                                           // reached Lucy: she hits it back, faster
+        lucyHitAt=now;beep(1000,.05,'square',.05);
+        const lane=rnd(3);b.type='L';b.lane=lane;b.path=LUCY[lane];b.i=0;b.ret=false;b.next=now+stepL();
+      }
+    }
+  }
+}
+
+/* ---------- drawing ---------- */
+function spr(n){const a=ATLAS[n],im=IMG[n];if(im&&im.complete)ctx.drawImage(im,a.x,a.y,a.w,a.h)}
+function digits(val,showZeroAlone=true,x0=0){
+  const d=ATLAS.digits,s=String(val);
+  for(let i=0;i<s.length;i++){
+    const place=s.length-1-i,ch=s[i],im=IMG[(place===2&&ch==='1')?'h1':'d'+ch];
+    if(!im||!im.complete)continue;
+    if(place===2&&ch==='1')ctx.drawImage(im,d.h1.x,d.h1.y,d.h1.w,d.h1.h);
+    else ctx.drawImage(im,d.ones.x-d.pitch*place+x0,d.ones.y,d.ones.w,d.ones.h);
+  }
+}
+function drawBall(i){
+  const [x,y]=POS[i];
+  ctx.fillStyle='#161a16';ctx.beginPath();ctx.ellipse(x,y,19.5,12,0,0,Math.PI*2);ctx.fill();
+}
+function render(now){
+  if(!ready()){ctx.fillStyle='#8f988f';ctx.fillRect(0,0,W,H);return}
+  spr('bg');
+  const playing=mode==='play';
+
+  // Lucy (appears when she is about to hit / hitting)
+  const lucyHitting=now-lucyHitAt<420;
+  const lucyNear=balls.some(b=>b.ret&&b.i>=b.path.length-2);
+  if(lucyHitting)spr('lu_swing');
+  else if(lucyNear)spr('lu_up');
+
+  // Charlie
+  let ch='ch_ball';
+  if(serve){const a=now-serve.t0;ch=a<350?'ch_ball':a<700?'ch_toss':'ch_pow'}
+  else if(now<chIdleUntil)ch='ch_idle';
+  spr(ch);
+  // GAME A / GAME B label: the word "GAME" is original art, the letter is drawn to match
+  ctx.save();ctx.fillStyle='#262b26';ctx.font='bold 41px Arial, Helvetica, sans-serif';ctx.textBaseline='alphabetic';ctx.scale(.88,1);ctx.fillText(game,136/.88,623);ctx.restore()
+
+  // Snoopy
+  const age=now-swingAt;
+  const pose=age<120?'up':age<420?'swing':'idle';
+  spr(`sn_${SPOT[spot]}_${pose}`);
+
+  // misses
+  if(miss>0){
+    spr('miss_txt');
+    for(let i=0;i<Math.min(miss,MAX_MISS);i++){
+      const a=ATLAS[i===0?'bird1':'bird2'],im=IMG[i===0?'bird1':'bird2'];
+      const x=a.x+(i===2?77:0);
+      if(im&&im.complete)ctx.drawImage(im,x,a.y,a.w,a.h);
+    }
+  }
+
+  // balls
+  if(playing||mode==='over')for(const b of balls)drawBall(b.path[b.i]);
+
+  // score / clock
+  if(mode==='clock'){
+    const d=new Date();let h=d.getHours()%12;if(h===0)h=12;const mi=d.getMinutes();
+    const t=[Math.floor(h/10)||null,h%10,Math.floor(mi/10),mi%10];
+    for(let k=0;k<4;k++){if(t[k]===null)continue;const im=IMG['d'+t[k]];const x=ATLAS.digits.ones.x-ATLAS.digits.pitch*(3-k);if(im&&im.complete)ctx.drawImage(im,x,0,ATLAS.digits.ones.w,ATLAS.digits.ones.h)}
+    if(Math.floor(now/500)%2===0){ctx.fillStyle='#1a201a';ctx.fillRect(236,30,12,12);ctx.fillRect(236,62,12,12)}
+  }else{
+    const blink=mode==='over'&&now-overAt<3500&&Math.floor(now/260)%2===1;
+    if(!blink)digits(score);
+  }
+}
+
+/* ---------- loop ---------- */
+function loop(now){update(now);render(now);requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+
+/* ---------- input ---------- */
+const $=id=>document.getElementById(id);
+function press(el,fn){
+  const on=e=>{e.preventDefault();el.classList.add('on');fn()};
+  const off=()=>el.classList.remove('on');
+  el.addEventListener('pointerdown',on);
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>el.addEventListener(ev,off));
+}
+const bind=(ids,fn)=>ids.forEach(i=>press($(i),fn));
+bind(['up','tUp'],()=>move(-1));bind(['down','tDown'],()=>move(1));
+bind(['hit','tHit'],doHit);bind(['bA','tA'],()=>start('A'));bind(['bB','tB'],()=>start('B'));
+press($('bT'),toClock);
+const KEYS={ArrowUp:()=>move(-1),KeyW:()=>move(-1),ArrowDown:()=>move(1),KeyS:()=>move(1),
+  Space:doHit,KeyZ:doHit,Enter:doHit,KeyX:doHit,Digit1:()=>start('A'),KeyA:()=>start('A'),Digit2:()=>start('B'),KeyB:()=>start('B'),KeyT:toClock};
+addEventListener('keydown',e=>{const f=KEYS[e.code];if(!f)return;e.preventDefault();if(!e.repeat)f()});
+$('snd').textContent=muted?'🔇':'🔊';
+$('snd').addEventListener('click',()=>{muted=!muted;$('snd').textContent=muted?'🔇':'🔊';
+  try{localStorage.setItem('snoopy-mute',muted?'1':'0')}catch(e){}if(!muted)beep(880,.08)});
+
+/* ---------- layout ---------- */
+const stage=$('stage'),bar=$('touchbar');
+const LCD={x:564,y:322};
+function fit(){
+  const vw=innerWidth,vh=innerHeight;
+  const compact=vw<720&&vh>vw;                 // phone held upright: big LCD + touch buttons
+  bar.style.display=compact?'flex':'none';
+  cv.classList.toggle('compact',compact);
+  if(compact){
+    stage.style.display='none';
+    const w=vw-24,h=w*H/W;
+    cv.style.width=w+'px';cv.style.height=h+'px';cv.style.left='12px';cv.style.top=(Math.max(12,(vh-170-h)/2))+'px';
+  }else{
+    stage.style.display='block';
+    const s=Math.min(vw/2123,vh/1302)*0.97;
+    const L=(vw-2123*s)/2,T=(vh-1302*s)/2;
+    stage.style.transform=`scale(${s})`;stage.style.left=L+'px';stage.style.top=T+'px';
+    cv.style.width=W*s+'px';cv.style.height=H*s+'px';cv.style.left=(L+LCD.x*s)+'px';cv.style.top=(T+LCD.y*s)+'px';
+  }
+}
+addEventListener('resize',fit);addEventListener('orientationchange',fit);fit();
+
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){
+  addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+})();
+</script>
+</body>
+</html>
