@@ -322,8 +322,9 @@ function render(now){
   if(mode==='clock'){
     const d=new Date();let h=d.getHours()%12;if(h===0)h=12;const mi=d.getMinutes();
     const t=[Math.floor(h/10)||null,h%10,Math.floor(mi/10),mi%10];
-    for(let k=0;k<4;k++){if(t[k]===null)continue;const im=IMG['d'+t[k]];const x=ATLAS.digits.ones.x-ATLAS.digits.pitch*(3-k);if(im&&im.complete)ctx.drawImage(im,x,0,ATLAS.digits.ones.w,ATLAS.digits.ones.h)}
-    if(Math.floor(now/500)%2===0){ctx.fillStyle='#1a201a';ctx.fillRect(236,30,12,12);ctx.fillRect(236,62,12,12)}
+    const CX=[124,186,296,358];   // hour cells, then a gap for the colon, then minute cells
+    for(let k=0;k<4;k++){if(t[k]===null)continue;const im=IMG['d'+t[k]];if(im&&im.complete)ctx.drawImage(im,CX[k],0,ATLAS.digits.ones.w,ATLAS.digits.ones.h)}
+    if(Math.floor(now/500)%2===0){ctx.fillStyle='#1a201a';ctx.beginPath();ctx.ellipse(277,33,6,6,0,0,Math.PI*2);ctx.ellipse(271,66,6,6,0,0,Math.PI*2);ctx.fill()}  // slanted like the digits
   }else{
     const blink=mode==='over'&&now-overAt<3500&&Math.floor(now/260)%2===1;
     if(!blink)digits(score);
