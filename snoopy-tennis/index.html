@@ -340,7 +340,7 @@ function render(now){
   if(me<0){if(lucyHitting)spr('lu_swing');else if(lucyNear)spr('lu_up')}
 
   // Charlie
-  if(me>=MS.walk){spr('ch_away');spr(me>=MS.throw?'cm_throw':'cm_idle')}
+  if(me>=MS.walk)spr('ch_away');   // Charlie in the middle is drawn after Snoopy (his racket reaches into that area)
   else{
     let ch='ch_ball';
     if(serve){const a=now-serve.t0;ch=a<350?'ch_ball':a<700?'ch_toss':'ch_pow'}
@@ -358,6 +358,7 @@ function render(now){
     spr(`sn_${SPOT[spot]}_${pose}`);
   }
   if(me>=MS.crash&&me<MS.walk)spr('crash');
+  if(me>=MS.walk)spr(me>=MS.throw?'cm_throw':'cm_idle');
 
   // misses
   if(miss>0){
