@@ -192,10 +192,10 @@ const sFan=()=>[784,988,1175,1568,1175,1568].forEach((f,i)=>beep(f,.11,'square',
 
 /* ---------- timing (measured from the recordings) ---------- */
 // Charlie's ball: ~1.5 s per position, a bit quicker as the score rises. Lucy's ball is twice as fast.
-// Difficulty stays as it starts until 100 points, then keeps rising: about 10% faster every 40 points, one more ball in play
+// Difficulty stays as it starts until 50 points, then keeps rising: about 10% faster every 40 points, one more ball in play
 // every 150 points (never more than 4), and serves come closer together at the same rate.
 function cfg(){
-  const A=game==='A',over=Math.max(0,score-100),f=Math.pow(0.9,over/40);   // flat until 100 points
+  const A=game==='A',over=Math.max(0,score-50),f=Math.pow(0.9,over/40);   // flat until 50 points
   return {c:A?1550:1200,min:A?380:300,f,max:Math.min(4,(A?2:3)+Math.floor(over/150)),gap:Math.max(A?1100:850,(A?3200:2300)*f)};
 }
 const stepC=()=>{const c=cfg();return Math.max(c.min,c.c*c.f)};
