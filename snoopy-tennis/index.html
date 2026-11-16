@@ -87,6 +87,7 @@ let game='A';
 let score=0,miss=0,spot=0;
 let best={A:0,B:0};try{best=JSON.parse(localStorage.getItem('snoopy-best')||'{"A":0,"B":0}')}catch(e){}
 let balls=[],serve=null,nextServe=0,pauseUntil=0,swingAt=-1e9,lucyHitAt=-1e9,overAt=0,newBest=false,chIdleUntil=0;
+let hitBuffer=0;
 let paused=false,pausedAt=0,pausedTotal=0;
 const gnow=()=>(paused?pausedAt:performance.now())-pausedTotal;
 let muted=false;try{muted=localStorage.getItem('snoopy-mute')==='1'}catch(e){}
@@ -154,17 +155,22 @@ function doHit(){
   if(mode!=='play'){start(game);return}
   if(now<pauseUntil)return;
   swingAt=now;
-  const b=balls.find(b=>!b.ret&&b.lane===spot&&b.i===b.path.length-1);
-  if(b){
-    addScore(b.type==='C'?2:3);sHit();
-    // the return flies back along Lucy's lane at the same height
-    b.type=b.type; b.ret=true; b.path=LUCY[b.lane].slice().reverse(); b.i=0; b.next=now+stepL();
-  }else beep(500,.04,'triangle',.04);
+  if(!tryHit(now)){hitBuffer=now+300;beep(500,.04,'triangle',.04)}
+}
+// A ball can be hit while it is in front of Snoopy (last position) or one step before it.
+function tryHit(now){
+  const b=balls.filter(b=>!b.ret&&b.lane===spot&&b.i>=b.path.length-2).sort((a,c)=>c.i-a.i)[0];
+  if(!b)return false;
+  hitBuffer=0;swingAt=Math.min(swingAt,now);
+  addScore(b.type==='C'?2:3);sHit();
+  // the return flies straight back along Lucy's lane at the same height (leaves at once)
+  b.ret=true;b.path=LUCY[b.lane].slice().reverse();b.i=1;b.next=now+stepL();
+  return true;
 }
 function move(d){
   if(mode!=='play'||paused)return;
   const n=Math.max(0,Math.min(2,spot+d));
-  if(n!==spot){spot=n;beep(420,.025,'square',.03)}
+  if(n!==spot){spot=n;hitBuffer=0;beep(420,.025,'square',.03)}
 }
 
 function update(now){
@@ -180,7 +186,8 @@ function update(now){
   for(const b of balls.slice()){
     if(now<b.next)continue;
     if(!b.ret){
-      if(b.i<b.path.length-1){b.i++;b.next=now+(b.type==='C'?stepC():stepL());sTick()}
+      if(b.i<b.path.length-1){b.i++;b.next=now+(b.type==='C'?stepC():stepL());sTick();
+        if(now<hitBuffer&&b.lane===spot&&b.i>=b.path.length-2){swingAt=now;tryHit(now)}}
       else{doMiss(now);return}                       // ball sat at Snoopy's spot and nobody hit it
     }else{
       if(b.i<b.path.length-1){b.i++;b.next=now+stepL();sTick()}
@@ -266,6 +273,7 @@ function render(now){
 /* ---------- loop ---------- */
 function loop(){const now=gnow();update(now);render(now);requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
+if(location.hash==='#debug')window.__st=()=>({mode,score,miss,spot,balls:balls.map(b=>({lane:b.lane,i:b.i,n:b.path.length,ret:b.ret,type:b.type}))});
 
 /* ---------- input ---------- */
 const $=id=>document.getElementById(id);
