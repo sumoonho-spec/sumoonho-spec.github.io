@@ -294,25 +294,6 @@ function update(now){
   }
 }
 
-/* ---------- LCD glass: soft blotches, fine grain and darker edges, like an old unit ---------- */
-const grime=(()=>{
-  const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');
-  let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
-  g.fillStyle='#fff';g.fillRect(0,0,W,H);
-  for(const [cw,ch,lo,hi] of [[9,6,226,255],[24,15,236,255]]){        // two scales of soft mottling
-    const t=document.createElement('canvas');t.width=cw;t.height=ch;const tg=t.getContext('2d');
-    for(let y=0;y<ch;y++)for(let x=0;x<cw;x++){const v=Math.round(lo+rnd()*(hi-lo));tg.fillStyle=`rgb(${v},${v},${v-2})`;tg.fillRect(x,y,1,1)}
-    g.globalCompositeOperation='multiply';g.imageSmoothingEnabled=true;g.imageSmoothingQuality='high';g.drawImage(t,0,0,W,H);
-  }
-  const id=g.getImageData(0,0,W,H),d=id.data;                         // fine grain
-  for(let i=0;i<d.length;i+=4){const n=(rnd()-.5)*14;d[i]+=n;d[i+1]+=n;d[i+2]+=n}
-  g.globalCompositeOperation='source-over';g.putImageData(id,0,0);
-  const v=g.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,W*.62);           // darker corners
-  v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(40,40,30,.16)');
-  g.fillStyle=v;g.fillRect(0,0,W,H);
-  return c;
-})();
-
 /* ---------- drawing ---------- */
 function spr(n){const a=ATLAS[n],im=IMG[n];if(im&&im.complete)ctx.drawImage(im,a.x,a.y,a.w,a.h)}
 function digits(val,showZeroAlone=true,x0=0){
@@ -384,7 +365,6 @@ function render(now){
     const blink=mode==='over'&&now-overAt<3500&&Math.floor(now/260)%2===1;
     if(!blink)digits(score);
   }
-  ctx.globalCompositeOperation='multiply';ctx.drawImage(grime,0,0);ctx.globalCompositeOperation='source-over';
   if(paused){
     ctx.fillStyle='rgba(20,24,20,.35)';ctx.fillRect(0,0,W,H);
     if(Math.floor(performance.now()/600)%2===0){
