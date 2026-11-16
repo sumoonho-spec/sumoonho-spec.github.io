@@ -9,29 +9,34 @@
 <meta name="apple-mobile-web-app-title" content="스누피 테니스">
 <title>스누피 테니스</title>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <style>
 :root{--bg:#2b2730;--purple:#9b78b4;--purple-d:#6f5489;--red:#e0564f;--red-d:#b53a35}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;touch-action:manipulation;overscroll-behavior:none}
+#view{position:fixed;left:0;top:0;width:100%;height:100%;overflow:hidden}
 #stage{position:absolute;left:0;top:0;width:2123px;height:1302px;transform-origin:0 0;border-radius:36px;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.55)}
 #device{position:absolute;left:0;top:0;width:2123px;height:1302px;display:block;pointer-events:none}
-#cv{position:absolute;display:block;image-rendering:auto;z-index:2}
+#cv{position:fixed;display:block;image-rendering:auto;z-index:2}
 .hit{position:absolute;z-index:3;border:0;padding:0;background:transparent;cursor:pointer;border-radius:50%}
 .hit.pill{border-radius:30px}
 .hit.on{background:rgba(0,0,0,.22)}
-#snd{position:absolute;left:2040px;top:48px;width:70px;height:70px;border-radius:50%;border:0;background:rgba(0,0,0,.28);font-size:38px;z-index:3;cursor:pointer;color:#fff;padding:0}
+#ctrl{position:fixed;top:calc(10px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));display:flex;gap:10px;z-index:6}
+#ctrl button{width:48px;height:48px;border-radius:50%;border:3px solid var(--purple);background:rgba(43,39,48,.85);color:#fff;font:700 20px/1 Arial,sans-serif;cursor:pointer;padding:0;touch-action:none}
+#ctrl button.on{background:var(--purple-d)}
 #touchbar{position:fixed;left:0;right:0;bottom:0;padding:10px 14px calc(14px + env(safe-area-inset-bottom));display:none;gap:12px;z-index:5}
 #touchbar button{flex:1;height:92px;border-radius:20px;border:4px solid var(--purple);background:radial-gradient(circle at 35% 30%,#f27a72,var(--red) 55%,var(--red-d));color:#fff;font:900 18px Arial;box-shadow:0 5px 0 var(--purple-d);touch-action:none}
 #touchbar button.on{transform:translateY(4px);box-shadow:0 1px 0 var(--purple-d)}
 #touchbar .col{flex:1;display:flex;flex-direction:column;gap:10px}
 #touchbar .col button{height:41px;font-size:15px}
+#touchbar button{white-space:nowrap;padding:0 4px}
 #touchbar #tHit{flex:1.4}
 #cv.compact{border:6px solid var(--purple);border-radius:14px;box-shadow:0 0 0 3px var(--purple-d)}
 </style>
 </head>
 <body>
+<div id="view">
 <div id="stage">
   <img id="device" src="assets/device.jpg" alt="" draggable="false">
   <button class="hit pill" id="bA"  aria-label="GAME A"  style="left:1780px;top:142px;width:140px;height:60px"></button>
@@ -40,9 +45,10 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;touch-action
   <button class="hit" id="up"   aria-label="UP"   style="left:1774px;top:710px;width:192px;height:192px"></button>
   <button class="hit" id="down" aria-label="DOWN" style="left:1774px;top:920px;width:192px;height:192px"></button>
   <button class="hit" id="hit"  aria-label="HIT"  style="left:140px;top:808px;width:192px;height:192px"></button>
-  <button id="snd" aria-label="sound">🔊</button>
+</div>
 </div>
 <canvas id="cv" width="997" height="632"></canvas>
+<div id="ctrl"><button id="pause" aria-label="pause">❚❚</button><button id="snd" aria-label="sound">🔊</button></div>
 <div id="touchbar">
   <div class="col"><button id="tUp">▲ UP</button><button id="tDown">▼ DOWN</button></div>
   <button id="tHit">HIT!</button>
@@ -81,6 +87,8 @@ let game='A';
 let score=0,miss=0,spot=0;
 let best={A:0,B:0};try{best=JSON.parse(localStorage.getItem('snoopy-best')||'{"A":0,"B":0}')}catch(e){}
 let balls=[],serve=null,nextServe=0,pauseUntil=0,swingAt=-1e9,lucyHitAt=-1e9,overAt=0,newBest=false,chIdleUntil=0;
+let paused=false,pausedAt=0,pausedTotal=0;
+const gnow=()=>(paused?pausedAt:performance.now())-pausedTotal;
 let muted=false;try{muted=localStorage.getItem('snoopy-mute')==='1'}catch(e){}
 
 /* ---------- audio ---------- */
@@ -107,10 +115,18 @@ const stepL=()=>stepC()*0.55;
 
 /* ---------- game ---------- */
 function start(g){
+  setPause(false);
   game=g;mode='play';score=0;miss=0;spot=0;balls=[];serve=null;newBest=false;
-  pauseUntil=performance.now()+900;nextServe=pauseUntil+400;sStart();
+  pauseUntil=gnow()+900;nextServe=pauseUntil+400;sStart();
 }
-function toClock(){mode='clock';balls=[];serve=null}
+function toClock(){setPause(false);mode='clock';balls=[];serve=null}
+function setPause(on){
+  if(on===paused)return;
+  if(on){if(mode!=='play')return;paused=true;pausedAt=performance.now()}
+  else{pausedTotal+=performance.now()-pausedAt;paused=false}
+  const b=document.getElementById('pause');if(b){b.textContent=paused?'▶':'❚❚';b.classList.toggle('on',paused)}
+}
+const togglePause=()=>setPause(!paused);
 const rnd=n=>Math.floor(Math.random()*n);
 
 function beginServe(now){
@@ -125,7 +141,7 @@ function doMiss(now){
   if(miss>=MAX_MISS)gameOver();
 }
 function gameOver(){
-  mode='over';overAt=performance.now();sOver();
+  mode='over';overAt=gnow();sOver();
   if(score>(best[game]||0)){best[game]=score;newBest=true;try{localStorage.setItem('snoopy-best',JSON.stringify(best))}catch(e){}}
 }
 function addScore(n){
@@ -133,7 +149,8 @@ function addScore(n){
   for(const m of [200,500])if(before<m&&score>=m){miss=0;sFan()}
 }
 function doHit(){
-  const now=performance.now();
+  if(paused){setPause(false);return}
+  const now=gnow();
   if(mode!=='play'){start(game);return}
   if(now<pauseUntil)return;
   swingAt=now;
@@ -145,13 +162,13 @@ function doHit(){
   }else beep(500,.04,'triangle',.04);
 }
 function move(d){
-  if(mode!=='play')return;
+  if(mode!=='play'||paused)return;
   const n=Math.max(0,Math.min(2,spot+d));
   if(n!==spot){spot=n;beep(420,.025,'square',.03)}
 }
 
 function update(now){
-  if(mode!=='play')return;
+  if(mode!=='play'||paused)return;
   if(now<pauseUntil)return;
   // Charlie's serve animation: toss -> POW (ball leaves) -> rest
   if(serve){
@@ -237,10 +254,17 @@ function render(now){
     const blink=mode==='over'&&now-overAt<3500&&Math.floor(now/260)%2===1;
     if(!blink)digits(score);
   }
+  if(paused){
+    ctx.fillStyle='rgba(20,24,20,.35)';ctx.fillRect(0,0,W,H);
+    if(Math.floor(performance.now()/600)%2===0){
+      ctx.fillStyle='#1a201a';ctx.font='900 92px Arial, Helvetica, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('PAUSE',W/2,H/2);ctx.textAlign='left';ctx.textBaseline='alphabetic';
+    }
+  }
 }
 
 /* ---------- loop ---------- */
-function loop(now){update(now);render(now);requestAnimationFrame(loop)}
+function loop(){const now=gnow();update(now);render(now);requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 
 /* ---------- input ---------- */
@@ -255,8 +279,10 @@ const bind=(ids,fn)=>ids.forEach(i=>press($(i),fn));
 bind(['up','tUp'],()=>move(-1));bind(['down','tDown'],()=>move(1));
 bind(['hit','tHit'],doHit);bind(['bA','tA'],()=>start('A'));bind(['bB','tB'],()=>start('B'));
 press($('bT'),toClock);
+press($('pause'),togglePause);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)setPause(true)});
 const KEYS={ArrowUp:()=>move(-1),KeyW:()=>move(-1),ArrowDown:()=>move(1),KeyS:()=>move(1),
-  Space:doHit,KeyZ:doHit,Enter:doHit,KeyX:doHit,Digit1:()=>start('A'),KeyA:()=>start('A'),Digit2:()=>start('B'),KeyB:()=>start('B'),KeyT:toClock};
+  Space:doHit,KeyZ:doHit,Enter:doHit,KeyX:doHit,Digit1:()=>start('A'),KeyA:()=>start('A'),Digit2:()=>start('B'),KeyB:()=>start('B'),KeyT:toClock,KeyP:togglePause,Escape:togglePause};
 addEventListener('keydown',e=>{const f=KEYS[e.code];if(!f)return;e.preventDefault();if(!e.repeat)f()});
 $('snd').textContent=muted?'🔇':'🔊';
 $('snd').addEventListener('click',()=>{muted=!muted;$('snd').textContent=muted?'🔇':'🔊';
@@ -266,7 +292,8 @@ $('snd').addEventListener('click',()=>{muted=!muted;$('snd').textContent=muted?'
 const stage=$('stage'),bar=$('touchbar');
 const LCD={x:564,y:322};
 function fit(){
-  const vw=innerWidth,vh=innerHeight;
+  const de=document.documentElement,vv=window.visualViewport;
+  const vw=Math.min(innerWidth,de.clientWidth||innerWidth,vv?vv.width:innerWidth),vh=Math.min(innerHeight,vv?vv.height:innerHeight);
   const compact=vw<720&&vh>vw;                 // phone held upright: big LCD + touch buttons
   bar.style.display=compact?'flex':'none';
   cv.classList.toggle('compact',compact);
@@ -282,7 +309,8 @@ function fit(){
     cv.style.width=W*s+'px';cv.style.height=H*s+'px';cv.style.left=(L+LCD.x*s)+'px';cv.style.top=(T+LCD.y*s)+'px';
   }
 }
-addEventListener('resize',fit);addEventListener('orientationchange',fit);fit();
+addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,250));
+if(window.visualViewport)visualViewport.addEventListener('resize',fit);fit();
 
 if('serviceWorker' in navigator&&location.protocol.startsWith('http')){
   addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
