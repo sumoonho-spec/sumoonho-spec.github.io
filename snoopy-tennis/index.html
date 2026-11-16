@@ -264,7 +264,7 @@ function tryHit(now){
   addScore(b.type==='C'?2:3);sHit();
   // the return flies straight back at the same height (leaves at once): to Charlie, who rallies it,
   // or into Lucy's lane, where she intercepts it
-  b.ret=true;b.to=Math.random()<0.4?'L':'C';
+  b.ret=true;b.to=Math.random()<0.5?'L':'C';   // half to Lucy, half back to Charlie
   b.path=(b.to==='L'?LUCY:CHARLIE)[b.lane].slice().reverse();b.i=1;b.next=now+stepL();
   return true;
 }
