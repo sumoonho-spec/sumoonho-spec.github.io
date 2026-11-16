@@ -166,7 +166,7 @@ let mode='clock';                 // clock | play | over
 let game='A';
 let score=0,miss=0,spot=0;
 let best={A:0,B:0};try{best=JSON.parse(localStorage.getItem('snoopy-best')||'{"A":0,"B":0}')}catch(e){}
-let balls=[],serve=null,nextServe=0,pauseUntil=0,swingAt=-1e9,lucyHitAt=-1e9,overAt=0,newBest=false,chIdleUntil=0;
+let balls=[],serve=null,nextServe=0,pauseUntil=0,swingAt=-1e9,lucyHitAt=-1e9,chHitAt=-1e9,rallies={C:0,L:0},overAt=0,newBest=false,chIdleUntil=0;
 let hitBuffer=0;
 let missSeq=null,deadPose=false;   // miss animation (timings measured from the original)
 const MS={crash:530,count:930,sleep:2100,walk:2900,throw:4100,end:5300};
@@ -204,7 +204,7 @@ const stepL=()=>stepC()*0.55;
 /* ---------- game ---------- */
 function start(g){
   setPause(false);
-  game=g;mode='play';score=0;miss=0;spot=0;balls=[];serve=null;newBest=false;missSeq=null;deadPose=false;
+  chHitAt=-1e9;lucyHitAt=-1e9;game=g;mode='play';score=0;miss=0;spot=0;balls=[];serve=null;newBest=false;missSeq=null;deadPose=false;
   pauseUntil=gnow()+900;nextServe=pauseUntil+400;sStart();
 }
 function toClock(){setPause(false);mode='clock';balls=[];serve=null;missSeq=null;deadPose=false}
@@ -262,8 +262,10 @@ function tryHit(now){
   if(!b)return false;
   hitBuffer=0;swingAt=Math.min(swingAt,now);
   addScore(b.type==='C'?2:3);sHit();
-  // the return flies straight back along Lucy's lane at the same height (leaves at once)
-  b.ret=true;b.path=LUCY[b.lane].slice().reverse();b.i=1;b.next=now+stepL();
+  // the return flies straight back at the same height (leaves at once): to Charlie, who rallies it,
+  // or into Lucy's lane, where she intercepts it
+  b.ret=true;b.to=Math.random()<0.5?'L':'C';   // half to Lucy, half back to Charlie
+  b.path=(b.to==='L'?LUCY:CHARLIE)[b.lane].slice().reverse();b.i=1;b.next=now+stepL();
   return true;
 }
 function move(d){
@@ -291,9 +293,12 @@ function update(now){
       else{doMiss(now);return}                       // ball sat at Snoopy's spot and nobody hit it
     }else{
       if(b.i<b.path.length-1){b.i++;b.next=now+stepL();sTick()}
-      else{                                           // reached Lucy: she hits it back, faster
-        lucyHitAt=now;beep(1000,.05,'square',.05);
+      else if(b.to==='L'){                            // reached Lucy: she hits it back, faster
+        lucyHitAt=now;rallies.L++;beep(1000,.05,'square',.05);
         const lane=rnd(3);b.type='L';b.lane=lane;b.path=LUCY[lane];b.i=0;b.ret=false;b.next=now+stepL();
+      }else{                                          // reached Charlie: he rallies it back
+        chHitAt=now;rallies.C++;beep(900,.05,'square',.05);
+        const lane=rnd(3);b.type='C';b.lane=lane;b.path=CHARLIE[lane];b.i=0;b.ret=false;b.next=now+stepC();
       }
     }
   }
@@ -321,7 +326,7 @@ function render(now){
 
   // Lucy (appears when she is about to hit / hitting)
   const lucyHitting=now-lucyHitAt<420;
-  const lucyNear=balls.some(b=>b.ret&&b.i>=b.path.length-2);
+  const lucyNear=balls.some(b=>b.ret&&b.to==='L'&&b.i>=b.path.length-2);
   const me=missSeq?now-missSeq.t0:(deadPose?1e9:-1);   // time into the miss animation
   if(me<0){if(lucyHitting)spr('lu_swing');else if(lucyNear)spr('lu_up')}
 
@@ -329,8 +334,10 @@ function render(now){
   if(me>=MS.walk)spr('ch_away');   // Charlie in the middle is drawn after Snoopy (his racket reaches into that area)
   else{
     let ch='ch_ball';
-    if(serve){const a=now-serve.t0;ch=a<350?'ch_ball':a<700?'ch_toss':'ch_pow'}
-    else if(now<chIdleUntil)ch='ch_idle';
+    const chNear=balls.some(b=>b.ret&&b.to==='C'&&b.i>=b.path.length-2);
+    if(now-chHitAt<420)ch='ch_pow';                       // rallying a return
+    else if(serve){const a=now-serve.t0;ch=a<350?'ch_ball':a<700?'ch_toss':'ch_pow'}
+    else if(chNear||now<chIdleUntil)ch='ch_idle';         // racket ready for an incoming return
     spr(ch);
   }
   // GAME A / GAME B label: the word "GAME" is original art, the letter is drawn to match
@@ -383,7 +390,7 @@ function render(now){
 function loop(){const now=gnow();update(now);render(now);requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 if(location.hash==='#debug')window.__score=v=>{score=v};
-if(location.hash==='#debug')window.__st=()=>({stepC:Math.round(stepC()),maxB:cfg().max,mode,score,miss,spot,ms:missSeq?gnow()-missSeq.t0:-1,balls:balls.map(b=>({lane:b.lane,i:b.i,n:b.path.length,ret:b.ret,type:b.type}))});
+if(location.hash==='#debug')window.__st=()=>({rallies,stepC:Math.round(stepC()),maxB:cfg().max,mode,score,miss,spot,ms:missSeq?gnow()-missSeq.t0:-1,balls:balls.map(b=>({to:b.to,lane:b.lane,i:b.i,n:b.path.length,ret:b.ret,type:b.type}))});
 
 /* ---------- input ---------- */
 const $=id=>document.getElementById(id);
