@@ -137,22 +137,24 @@ html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 45%,#3b
 <script>
 (()=>{
 "use strict";
-const ATLAS={"ch_ball":{"x":0,"y":370,"w":290,"h":262},"ch_toss":{"x":0,"y":370,"w":290,"h":262},"ch_idle":{"x":0,"y":370,"w":290,"h":262},"ch_pow":{"x":0,"y":370,"w":290,"h":262},"lu_up":{"x":0,"y":95,"w":230,"h":250},"lu_idle":{"x":0,"y":95,"w":230,"h":250},"lu_swing":{"x":0,"y":95,"w":230,"h":250},"sn_top_idle":{"x":560,"y":95,"w":437,"h":505},"sn_mid_idle":{"x":560,"y":95,"w":437,"h":505},"sn_bot_idle":{"x":560,"y":95,"w":437,"h":505},"sn_top_up":{"x":560,"y":95,"w":437,"h":505},"sn_top_swing":{"x":560,"y":95,"w":437,"h":505},"sn_bot_swing":{"x":560,"y":95,"w":437,"h":505},"sn_bot_up":{"x":560,"y":95,"w":437,"h":505},"sn_mid_up":{"x":560,"y":95,"w":437,"h":505},"sn_mid_swing":{"x":560,"y":95,"w":437,"h":505},"miss_txt":{"x":464,"y":4,"w":100,"h":40},"bird1":{"x":480,"y":46,"w":82,"h":71},"bird2":{"x":557,"y":46,"w":81,"h":71},"letterA":{"x":128,"y":590,"w":38,"h":38},"digits":{"ones":{"x":310,"y":0,"w":62,"h":100},"pitch":62,"h1":{"x":178,"y":0,"w":56,"h":100}},"pos":[[196.8,294.6],[198.2,133.6],[207.5,204.7],[273.6,345.0],[296.7,314.4],[296.9,375.1],[297.6,264.0],[301.0,213.4],[308.9,128.2],[344.0,311.6],[354.0,221.5],[377.3,375.0],[404.4,344.1],[405.4,129.8],[406.0,291.0],[410.5,233.4],[411.9,186.2],[460.2,382.1],[472.9,278.3],[474.7,162.5],[507.8,136.6],[508.3,378.8],[508.4,253.9],[544.9,405.1],[551.9,147.7],[611.8,276.6],[613.3,430.5],[618.7,147.8]],"sn_sleep":{"x":560,"y":95,"w":437,"h":505},"ch_away":{"x":0,"y":370,"w":290,"h":262},"cm_idle":{"x":296,"y":372,"w":354,"h":260},"cm_throw":{"x":296,"y":372,"w":354,"h":260},"crash":{"x":787,"y":117,"w":217,"h":229}};
+const ATLAS={"ch_ball":{"x":0,"y":370,"w":290,"h":262},"ch_toss":{"x":0,"y":370,"w":290,"h":262},"ch_idle":{"x":0,"y":370,"w":290,"h":262},"ch_pow":{"x":0,"y":370,"w":290,"h":262},"lu_up":{"x":0,"y":95,"w":230,"h":250},"lu_idle":{"x":0,"y":95,"w":230,"h":250},"lu_swing":{"x":0,"y":95,"w":230,"h":250},"sn_top_idle":{"x":560,"y":95,"w":437,"h":505},"sn_mid_idle":{"x":560,"y":95,"w":437,"h":505},"sn_bot_idle":{"x":560,"y":95,"w":437,"h":505},"sn_top_up":{"x":560,"y":95,"w":437,"h":505},"sn_top_swing":{"x":560,"y":95,"w":437,"h":505},"sn_bot_swing":{"x":560,"y":95,"w":437,"h":505},"sn_bot_up":{"x":560,"y":95,"w":437,"h":505},"sn_mid_up":{"x":560,"y":95,"w":437,"h":505},"sn_mid_swing":{"x":560,"y":95,"w":437,"h":505},"miss_txt":{"x":464,"y":4,"w":100,"h":40},"bird1":{"x":480,"y":46,"w":82,"h":71},"bird2":{"x":557,"y":46,"w":81,"h":71},"letterA":{"x":128,"y":590,"w":38,"h":38},"digits":{"ones":{"x":310,"y":0,"w":62,"h":100},"pitch":62,"h1":{"x":178,"y":0,"w":56,"h":100}},"pos":[[196.8,294.6],[198.2,133.6],[207.5,204.7],[273.6,345.0],[296.7,314.4],[296.9,375.1],[297.6,264.0],[301.0,213.4],[308.9,128.2],[344.0,311.6],[354.0,221.5],[377.3,375.0],[404.4,344.1],[405.4,129.8],[406.0,291.0],[410.5,233.4],[411.9,186.2],[460.2,382.1],[472.9,278.3],[474.7,162.5],[507.8,136.6],[508.3,378.8],[508.4,253.9],[544.9,405.1],[551.9,147.7],[611.8,276.6],[613.3,430.5],[618.7,147.8],[246,320],[544,275]],"sn_sleep":{"x":560,"y":95,"w":437,"h":505},"ch_away":{"x":0,"y":370,"w":290,"h":262},"cm_idle":{"x":296,"y":372,"w":354,"h":260},"cm_throw":{"x":296,"y":372,"w":354,"h":260},"crash":{"x":787,"y":117,"w":217,"h":229},"am":{"x":23,"y":7,"w":56,"h":33},"game_a":{"x":23,"y":593,"w":136,"h":31},"game_b":{"x":839,"y":588,"w":135,"h":37},"wood_l":{"x":793,"y":19,"w":73,"h":71},"wood_r":{"x":870,"y":22,"w":86,"h":68},"lu_low_rk":{"x":128,"y":258,"w":38,"h":73},"toss_fx":{"x":175,"y":336,"w":81,"h":66},"miss_ball0":{"x":777,"y":153,"w":77,"h":47},"miss_ball1":{"x":774,"y":296,"w":87,"h":60},"miss_ball2":{"x":799,"y":500,"w":56,"h":83}};
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 const W=997,H=632;
 ATLAS.bg={x:0,y:0,w:997,h:632};
-const POS=ATLAS.pos;                           // the 28 fixed ball positions of the LCD
+const POS=ATLAS.pos;                           // the fixed ball positions of the LCD (from the all-segments photo)
 // ball lanes (indexes into POS). Charlie's balls fly slowly, Lucy's twice as fast.
-const CHARLIE=[[6,10,16,19,24,27],[3,9,14,18,22,25],[5,11,17,23,26]];   // top, middle, bottom
-const LUCY   =[[1,8,13,20,27],[2,7,15,22,25],[0,4,12,21,26]];
+// Charlie's lanes: a rising lob to the top branch, a level drive to the middle, a low drive to the ground
+const CHARLIE=[[28,6,10,16,19,24,27],[3,9,14,18,29,25],[5,11,17,23,26]];   // top, middle, bottom
+const LUCY   =[[1,8,13,20,27],[2,7,15,22,25],[0,4,12,21,26]];   // Lucy's straight, faster shots
+const MISSPOS=[[832,180],[842,334],[834,565]];                   // a missed ball flies on into the tree
 const SPOT=['top','mid','bot'];
 const MAX_MISS=3;
 
 /* ---------- assets ---------- */
-const NAMES=['bg','ch_ball','ch_toss','ch_idle','ch_pow','lu_up','lu_idle','lu_swing','miss_txt','bird1','bird2',
+const NAMES=['am','game_a','game_b','wood_l','wood_r','lu_low_rk','toss_fx','miss_ball0','miss_ball1','miss_ball2','bg','ch_ball','ch_toss','ch_idle','ch_pow','lu_up','lu_idle','lu_swing','miss_txt','bird1','bird2',
   'sn_sleep','ch_away','cm_idle','cm_throw','crash',
   'sn_top_idle','sn_top_up','sn_top_swing','sn_mid_idle','sn_mid_up','sn_mid_swing','sn_bot_idle','sn_bot_up','sn_bot_swing'];
-const EXT={};
+const EXT={am:'png',game_a:'png',game_b:'png',wood_l:'png',wood_r:'png',lu_low_rk:'png',toss_fx:'png',miss_ball0:'png',miss_ball1:'png',miss_ball2:'png'};
 const IMG={};
 let loaded=0,total=NAMES.length+11;
 function load(key,src){const im=new Image();im.onload=()=>{loaded++};im.onerror=()=>{loaded++};im.src=src;IMG[key]=im}
@@ -168,6 +170,7 @@ let score=0,miss=0,spot=0;
 let best={A:0,B:0};try{best=JSON.parse(localStorage.getItem('snoopy-best')||'{"A":0,"B":0}')}catch(e){}
 let balls=[],serve=null,nextServe=0,pauseUntil=0,swingAt=-1e9,lucyHitAt=-1e9,chHitAt=-1e9,rallies={C:0,L:0},overAt=0,newBest=false,chIdleUntil=0;
 let hitBuffer=0;
+let wood={l:false,r:false,next:0};   // Woodstocks in the nest, at random
 let missSeq=null,deadPose=false;   // miss animation (timings measured from the original)
 const MS={crash:530,count:930,sleep:2100,walk:2900,throw:4100,end:5300};
 let paused=false,pausedAt=0,pausedTotal=0;
@@ -226,8 +229,8 @@ function launchCharlie(now,lane){
 }
 // Missed: the ball vanishes, CRASH! in the tree, a bird is added, Snoopy naps on his doghouse,
 // Charlie walks out and throws his racket, then play resumes.
-function doMiss(now){
-  balls=[];serve=null;hitBuffer=0;missSeq={t0:now,counted:false};
+function doMiss(now,lane){
+  balls=[];serve=null;hitBuffer=0;missSeq={t0:now,counted:false,lane};
   pauseUntil=now+MS.end;nextServe=pauseUntil+700;
   beep(160,.3,'sawtooth',.07,MS.crash/1000);beep(110,.35,'sawtooth',.07,MS.crash/1000+.16);
 }
@@ -290,7 +293,7 @@ function update(now){
     if(!b.ret){
       if(b.i<b.path.length-1){b.i++;b.next=now+(b.type==='C'?stepC():stepL());sTick();
         if(now<hitBuffer&&b.lane===spot&&b.i>=b.path.length-2){swingAt=now;tryHit(now)}}
-      else{doMiss(now);return}                       // ball sat at Snoopy's spot and nobody hit it
+      else{doMiss(now,b.lane);return}                       // ball sat at Snoopy's spot and nobody hit it
     }else{
       if(b.i<b.path.length-1){b.i++;b.next=now+stepL();sTick()}
       else if(b.to==='L'){                            // reached Lucy: she hits it back, faster
@@ -302,6 +305,12 @@ function update(now){
       }
     }
   }
+}
+
+function stepWood(now){
+  if(now<wood.next)return;
+  if(wood.l||wood.r){wood.l=wood.r=false;wood.next=now+3000+Math.random()*7000}
+  else{const k=Math.random();wood.l=k<.7;wood.r=k>.35;wood.next=now+1500+Math.random()*2500}
 }
 
 /* ---------- drawing ---------- */
@@ -323,12 +332,16 @@ function render(now){
   if(!ready()){ctx.fillStyle='#8f988f';ctx.fillRect(0,0,W,H);return}
   spr('bg');
   const playing=mode==='play';
+  if(!paused)stepWood(now);
+  if(wood.l)spr('wood_l');if(wood.r)spr('wood_r');
 
   // Lucy (appears when she is about to hit / hitting)
   const lucyHitting=now-lucyHitAt<420;
   const lucyNear=balls.some(b=>b.ret&&b.to==='L'&&b.i>=b.path.length-2);
   const me=missSeq?now-missSeq.t0:(deadPose?1e9:-1);   // time into the miss animation
-  if(me<0){if(lucyHitting)spr('lu_swing');else if(lucyNear)spr('lu_up')}
+  // Lucy waits with her racket down, raises it as the ball arrives, then swings
+  const lucyComing=balls.some(b=>b.ret&&b.to==='L'&&b.i>=b.path.length-3);
+  if(me<0){if(lucyHitting)spr('lu_swing');else if(lucyNear)spr('lu_up');else if(lucyComing){spr('lu_idle');spr('lu_low_rk')}}
 
   // Charlie
   if(me>=MS.walk)spr('ch_away');   // Charlie in the middle is drawn after Snoopy (his racket reaches into that area)
@@ -339,17 +352,22 @@ function render(now){
     else if(serve){const a=now-serve.t0;ch=a<350?'ch_ball':a<700?'ch_toss':'ch_pow'}
     else if(chNear||now<chIdleUntil)ch='ch_idle';         // racket ready for an incoming return
     spr(ch);
+    if(ch==='ch_toss')spr('toss_fx');                     // the ball tossed above his head
   }
-  // GAME A / GAME B label: the word "GAME" is original art, the letter is drawn to match
-  ctx.save();ctx.fillStyle='#262b26';ctx.font='bold 41px Arial, Helvetica, sans-serif';ctx.textBaseline='alphabetic';ctx.scale(.88,1);ctx.fillText(game,136/.88,623);ctx.restore()
+  // GAME A label at the left, GAME B at the right (none in clock mode), as on the LCD
+  if(mode!=='clock')spr(game==='A'?'game_a':'game_b');
 
   // Snoopy
   if(me>=MS.sleep)spr('sn_sleep');
   else{
     const age=now-swingAt;
-    const pose=me>=0?'idle':age<120?'up':age<420?'swing':'idle';
+    // racket raised (ready to smash) while a ball is in reach on his branch
+    const ready=balls.some(b=>!b.ret&&b.lane===spot&&b.i>=b.path.length-2);
+    const pose=me>=0?'idle':age<120?'up':age<420?'swing':ready?'up':'idle';
     spr(`sn_${SPOT[spot]}_${pose}`);
   }
+  if(missSeq&&me<450){const L=missSeq.lane;spr('miss_ball'+L);const [x,y]=MISSPOS[L];
+    ctx.fillStyle='#161a16';ctx.beginPath();ctx.ellipse(x,y,19.5,12,0,0,Math.PI*2);ctx.fill()}
   if(me>=MS.crash&&me<MS.walk)spr('crash');
   if(me>=MS.walk)spr(me>=MS.throw?'cm_throw':'cm_idle');
 
@@ -358,7 +376,7 @@ function render(now){
     spr('miss_txt');
     for(let i=0;i<Math.min(miss,MAX_MISS);i++){
       const a=ATLAS[i===0?'bird1':'bird2'],im=IMG[i===0?'bird1':'bird2'];
-      const x=a.x+(i===2?77:0);
+      const x=i===2?ATLAS.bird1.x-75:a.x;                // the third bird sits to the left of the others
       if(im&&im.complete)ctx.drawImage(im,x,a.y,a.w,a.h);
     }
   }
@@ -369,10 +387,11 @@ function render(now){
   // score / clock
   if(mode==='clock'){
     const d=new Date();let h=d.getHours()%12;if(h===0)h=12;const mi=d.getMinutes();
+    if(d.getHours()<12)spr('am');                         // AM mark (no mark in the afternoon)
     const t=[Math.floor(h/10)||null,h%10,Math.floor(mi/10),mi%10];
-    const CX=[124,186,296,358];   // hour cells, then a gap for the colon, then minute cells
+    const CX=[94,156,248,310];    // hour cells, colon, minute cells (minutes share the score's cells)
     for(let k=0;k<4;k++){if(t[k]===null)continue;const im=IMG['d'+t[k]];if(im&&im.complete)ctx.drawImage(im,CX[k],0,ATLAS.digits.ones.w,ATLAS.digits.ones.h)}
-    if(Math.floor(now/500)%2===0){ctx.fillStyle='#1a201a';ctx.beginPath();ctx.ellipse(277,33,6,6,0,0,Math.PI*2);ctx.ellipse(271,66,6,6,0,0,Math.PI*2);ctx.fill()}  // slanted like the digits
+    if(Math.floor(now/500)%2===0){ctx.fillStyle='#1a201a';ctx.beginPath();ctx.ellipse(236,35,6,6,0,0,Math.PI*2);ctx.ellipse(232,64,6,6,0,0,Math.PI*2);ctx.fill()}  // slanted like the digits
   }else{
     const blink=mode==='over'&&now-overAt<3500&&Math.floor(now/260)%2===1;
     if(!blink)digits(score);
