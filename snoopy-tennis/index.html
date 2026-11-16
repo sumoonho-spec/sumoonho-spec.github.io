@@ -361,9 +361,8 @@ function render(now){
   if(me>=MS.sleep)spr('sn_sleep');
   else{
     const age=now-swingAt;
-    // racket raised (ready to smash) while a ball is in reach on his branch
-    const ready=balls.some(b=>!b.ret&&b.lane===spot&&b.i>=b.path.length-2);
-    const pose=me>=0?'idle':age<120?'up':age<420?'swing':ready?'up':'idle';
+    // racket stays down until HIT is pressed: raise, then swing
+    const pose=me>=0?'idle':age<120?'up':age<420?'swing':'idle';
     spr(`sn_${SPOT[spot]}_${pose}`);
   }
   if(missSeq&&me<450){const L=missSeq.lane;spr('miss_ball'+L);const [x,y]=MISSPOS[L];
