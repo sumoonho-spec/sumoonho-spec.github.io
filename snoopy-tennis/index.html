@@ -23,15 +23,15 @@ html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 45%,#3b
 .hit{position:absolute;z-index:3;border:0;padding:0;background:transparent;cursor:pointer;border-radius:50%}
 .hit.pill{border-radius:30px}
 .hit.on{background:rgba(0,0,0,.22)}
-#ctrl{position:fixed;top:calc(10px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));display:flex;gap:10px;z-index:6}
-#ctrl.side{top:50%;transform:translateY(-50%);flex-direction:column;gap:12px}
-#ctrl.rot{top:auto;right:0;left:0;bottom:calc(10px + env(safe-area-inset-bottom));justify-content:center;flex-direction:row-reverse;gap:14px}
-#ctrl button{width:46px;height:46px;border-radius:50%;border:2px solid #9b78b4;background:linear-gradient(#433b4c,#28232e);color:#efe6c8;font:700 18px/1 Arial,sans-serif;cursor:pointer;padding:0;touch-action:none;box-shadow:0 3px 0 #17141b,0 6px 12px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.15)}
-#ctrl button.on{background:linear-gradient(#5b4a6b,#3d3248);transform:translateY(2px);box-shadow:0 1px 0 #17141b,inset 0 2px 4px rgba(0,0,0,.4)}
-#ctrl.rot button.on{transform:rotate(90deg) translateY(2px)}
-#ctrl #lay{font:800 13px/1 "Helvetica Neue",Arial,sans-serif;letter-spacing:-.3px}
-#ctrl #restart{font-size:24px}
-#ctrl.rot button{transform:rotate(90deg)}
+/* built-in controls on the landscape device (stage coordinates) */
+#devctl{position:absolute;left:470px;top:1131px;width:1180px;height:76px;display:flex;justify-content:space-evenly;align-items:center;z-index:3}
+.dc{display:flex;align-items:center;gap:14px}
+.dpill{width:96px;height:61px;border:0;padding:0;cursor:pointer;touch-action:none;background:url(assets/pill.png) center/contain no-repeat;transition:transform .06s}
+.dpill.on{transform:translateY(2px);filter:brightness(.88)}
+.dc span{font:700 25px/1 "Helvetica Neue",Helvetica,Arial,sans-serif;letter-spacing:1.5px;color:#2a2622;text-shadow:0 1px 0 rgba(255,255,255,.35)}
+.dled{position:relative;width:30px;height:30px;border-radius:50%;background:url(assets/led.png) center/contain no-repeat}
+.dled::after{content:"";position:absolute;inset:7px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff3d0,#ff9a3c 45%,#e2541b 80%);opacity:0;transition:opacity .15s}
+.dled.lit::after{opacity:.95;box-shadow:0 0 14px 5px rgba(255,130,40,.55)}
 
 /* ===== portrait: the device stood upright ===== */
 #shell{display:none;position:fixed;inset:0;z-index:4;
@@ -45,10 +45,14 @@ html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 45%,#3b
 #top{display:flex;align-items:center;justify-content:space-between;min-height:46px;margin-bottom:8px}
 #best{font:800 12px/1.25 "Helvetica Neue",Arial,sans-serif;letter-spacing:1.2px;color:#5a4a28;text-shadow:0 1px 0 rgba(255,255,255,.6)}
 #best b{display:block;font-size:10px;letter-spacing:2px;color:#8a7440}
-#ctrl.inline{position:static;gap:clamp(4px,1.6vw,8px)}
-#ctrl.inline button{width:clamp(34px,10vw,40px);height:clamp(34px,10vw,40px);border:0;color:#5a4a28;font-size:15px;
-  background:linear-gradient(#efe3b2,#d2bc7b);box-shadow:0 2px 0 #a88f4e,inset 0 1px 0 rgba(255,255,255,.8),0 0 0 1px #b39a5a}
-#ctrl.inline button.on{transform:translateY(2px);box-shadow:0 0 0 #a88f4e,inset 0 1px 3px rgba(0,0,0,.25),0 0 0 1px #b39a5a;background:linear-gradient(#d9c68a,#c9b16e)}
+/* built-in controls on the upright device: small pills like GAME A/B/TIME */
+#upctl{display:flex;gap:clamp(6px,2.4vw,12px)}
+.uc{display:flex;flex-direction:column;align-items:center;gap:4px}
+.pillbtn.sm{width:clamp(38px,11vw,50px);height:21px;border-width:3px;border-radius:11px;box-shadow:0 2px 0 #6f5489,0 3px 5px rgba(60,40,10,.22),inset 0 1px 0 #fff}
+.pillbtn.sm.on{transform:translateY(2px);box-shadow:0 0 0 #6f5489,inset 0 2px 3px rgba(0,0,0,.2)}
+.uc i{font:800 8.5px/1 "Helvetica Neue",Arial,sans-serif;font-style:normal;letter-spacing:.6px;color:#3d3220;display:flex;align-items:center;gap:3px;text-shadow:0 1px 0 rgba(255,255,255,.55)}
+.uled{width:7px;height:7px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#d9d4c4,#8c8676);box-shadow:inset 0 0 0 1px #6f6a5c}
+.uled.lit{background:radial-gradient(circle at 40% 35%,#fff3d0,#ff9a3c 50%,#e2541b);box-shadow:0 0 5px 1px rgba(255,130,40,.7)}
 
 #bezel{position:relative;border-radius:12px;padding:24px 10px 24px;
   background:linear-gradient(180deg,#f1f1f4 0%,#d3d3d9 40%,#bcbcc4 100%);
@@ -68,7 +72,7 @@ html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 45%,#3b
   border:4px solid #9b78b4;background:linear-gradient(#fbfbfd,#c7c7cf 60%,#a9a9b3);
   box-shadow:0 3px 0 #6f5489,0 5px 8px rgba(60,40,10,.25),inset 0 1px 0 #fff}
 .pillbtn.on{transform:translateY(3px);box-shadow:0 0 0 #6f5489,0 1px 2px rgba(60,40,10,.2),inset 0 2px 3px rgba(0,0,0,.2)}
-.main{display:flex;align-items:center;justify-content:space-between;padding:0 clamp(6px,4vw,22px)}
+.main{display:flex;flex-direction:row-reverse;align-items:center;justify-content:space-between;padding:0 clamp(6px,4vw,22px)}
 .dpad{display:flex;flex-direction:column;gap:clamp(6px,1.6vh,14px)}
 .red{--s:clamp(66px,10.5vh,86px);width:var(--s);height:var(--s);border-radius:50%;padding:0;cursor:pointer;touch-action:none;
   border:6px solid #9b78b4;
@@ -79,7 +83,7 @@ html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 45%,#3b
 #shell.scaled #face{border:12px solid #9474b0;border-radius:38px;box-shadow:inset 0 2px 0 rgba(255,255,255,.7),inset 0 -3px 8px rgba(80,60,20,.25),0 0 0 2px #7f5f9c,0 24px 50px rgba(0,0,0,.55)}
 #shell.scaled .red{--s:82px}#shell.scaled .red.big{--s:116px}#shell.scaled .dpad{gap:12px}
 #shell.scaled .pills{gap:26px}#shell.scaled .main{padding:0 18px}
-#shell.scaled #ctrl.inline{gap:8px}#shell.scaled #ctrl.inline button{width:40px;height:40px}
+#shell.scaled .pillbtn.sm{width:48px}
 .red.on{transform:translateY(4px);box-shadow:0 0 0 2px #7b5a98,0 1px 0 #6a4e85,0 2px 4px rgba(60,30,10,.3),inset 0 -2px 6px rgba(80,0,0,.4),inset 0 3px 7px rgba(0,0,0,.25)}
 </style>
 </head>
@@ -90,15 +94,25 @@ html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 45%,#3b
   <button class="hit pill" id="bA"  aria-label="GAME A"  style="left:1780px;top:142px;width:140px;height:60px"></button>
   <button class="hit pill" id="bB"  aria-label="GAME B"  style="left:1780px;top:286px;width:140px;height:60px"></button>
   <button class="hit pill" id="bT"  aria-label="TIME"    style="left:1780px;top:432px;width:140px;height:60px"></button>
-  <button class="hit" id="up"   aria-label="UP"   style="left:1774px;top:710px;width:192px;height:192px"></button>
-  <button class="hit" id="down" aria-label="DOWN" style="left:1774px;top:920px;width:192px;height:192px"></button>
-  <button class="hit" id="hit"  aria-label="HIT"  style="left:140px;top:808px;width:192px;height:192px"></button>
+  <button class="hit" id="up"   aria-label="UP"   style="left:135px;top:680px;width:192px;height:192px"></button>
+  <button class="hit" id="down" aria-label="DOWN" style="left:135px;top:890px;width:192px;height:192px"></button>
+  <div id="devctl">
+    <div class="dc"><button class="dpill" id="dRestart" aria-label="reset"></button><span>RESET</span></div>
+    <div class="dc"><button class="dpill" id="dPause" aria-label="pause"></button><span>PAUSE</span><i class="dled" data-led="pause"></i></div>
+    <div class="dc"><button class="dpill" id="dSnd" aria-label="sound"></button><span>SOUND</span><i class="dled" data-led="snd"></i></div>
+    <div class="dc"><button class="dpill" id="dLay" aria-label="rotate"></button><span>ROTATE</span></div>
+  </div>
+  <button class="hit" id="hit"  aria-label="HIT"  style="left:1773px;top:886px;width:192px;height:192px"></button>
 </div>
 </div>
 <canvas id="cv" width="997" height="632"></canvas>
-<div id="ctrl"><button id="restart" aria-label="restart" title="다시 시작">↻</button><button id="pause" aria-label="pause" title="일시정지">❚❚</button><button id="snd" aria-label="sound" title="소리">🔊</button><button id="lay" aria-label="layout" title="화면 모드">자동</button></div>
 <div id="shell"><div id="face">
-  <div id="top"><div id="best"></div><div id="ctrlSlot"></div></div>
+  <div id="top"><div id="best"></div><div id="upctl">
+    <div class="uc"><button class="pillbtn sm" id="restart" aria-label="reset"></button><i>RESET</i></div>
+    <div class="uc"><button class="pillbtn sm" id="pause" aria-label="pause"></button><i><b class="uled" data-led="pause"></b>PAUSE</i></div>
+    <div class="uc"><button class="pillbtn sm" id="snd" aria-label="sound"></button><i><b class="uled" data-led="snd"></b>SOUND</i></div>
+    <div class="uc"><button class="pillbtn sm" id="lay" aria-label="rotate"></button><i>ROTATE</i></div>
+  </div></div>
   <div id="bezel">
     <div class="lbl t"><span>SNOOPY TENNIS</span></div>
     <div id="lcdframe"><div id="lcdSlot"></div></div>
@@ -190,7 +204,7 @@ function setPause(on){
   if(on===paused)return;
   if(on){if(mode!=='play')return;paused=true;pausedAt=performance.now()}
   else{pausedTotal+=performance.now()-pausedAt;paused=false}
-  const b=document.getElementById('pause');if(b){b.textContent=paused?'▶':'❚❚';b.classList.toggle('on',paused)}
+  syncLeds();
 }
 const togglePause=()=>setPause(!paused);
 const rnd=n=>Math.floor(Math.random()*n);
@@ -322,8 +336,9 @@ function render(now){
   if(mode==='clock'){
     const d=new Date();let h=d.getHours()%12;if(h===0)h=12;const mi=d.getMinutes();
     const t=[Math.floor(h/10)||null,h%10,Math.floor(mi/10),mi%10];
-    for(let k=0;k<4;k++){if(t[k]===null)continue;const im=IMG['d'+t[k]];const x=ATLAS.digits.ones.x-ATLAS.digits.pitch*(3-k);if(im&&im.complete)ctx.drawImage(im,x,0,ATLAS.digits.ones.w,ATLAS.digits.ones.h)}
-    if(Math.floor(now/500)%2===0){ctx.fillStyle='#1a201a';ctx.fillRect(236,30,12,12);ctx.fillRect(236,62,12,12)}
+    const CX=[124,186,296,358];   // hour cells, then a gap for the colon, then minute cells
+    for(let k=0;k<4;k++){if(t[k]===null)continue;const im=IMG['d'+t[k]];if(im&&im.complete)ctx.drawImage(im,CX[k],0,ATLAS.digits.ones.w,ATLAS.digits.ones.h)}
+    if(Math.floor(now/500)%2===0){ctx.fillStyle='#1a201a';ctx.beginPath();ctx.ellipse(277,33,6,6,0,0,Math.PI*2);ctx.ellipse(271,66,6,6,0,0,Math.PI*2);ctx.fill()}  // slanted like the digits
   }else{
     const blink=mode==='over'&&now-overAt<3500&&Math.floor(now/260)%2===1;
     if(!blink)digits(score);
@@ -354,36 +369,35 @@ const bind=(ids,fn)=>ids.forEach(i=>press($(i),fn));
 bind(['up','tUp'],()=>move(-1));bind(['down','tDown'],()=>move(1));
 bind(['hit','tHit'],doHit);bind(['bA','tA'],()=>start('A'));bind(['bB','tB'],()=>start('B'));
 bind(['bT','tT'],toClock);
-press($('pause'),togglePause);
-press($('restart'),()=>{start(game)});
-// layout: auto (follows the phone) -> landscape device -> upright device
-const LAYOUTS=['auto','land','port'],LAYLBL={auto:'자동',land:'가로',port:'세로'};
-let layout='auto';try{layout=localStorage.getItem('snoopy-layout')||'auto'}catch(e){}
-if(!LAYOUTS.includes(layout))layout='auto';
-press($('lay'),()=>{layout=LAYOUTS[(LAYOUTS.indexOf(layout)+1)%3];try{localStorage.setItem('snoopy-layout',layout)}catch(e){}fit()});
+bind(['pause','dPause'],togglePause);
+bind(['restart','dRestart'],()=>{start(game)});
+// screen layout: landscape device <-> upright device (remembered)
+let layout=null;try{layout=localStorage.getItem('snoopy-layout')}catch(e){}
+if(layout!=='land'&&layout!=='port')layout=(innerWidth<720&&innerHeight>innerWidth)?'port':'land';
+bind(['lay','dLay'],()=>{layout=layout==='land'?'port':'land';try{localStorage.setItem('snoopy-layout',layout)}catch(e){}fit()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)setPause(true)});
 const KEYS={ArrowUp:()=>move(-1),KeyW:()=>move(-1),ArrowDown:()=>move(1),KeyS:()=>move(1),
   Space:doHit,KeyZ:doHit,Enter:doHit,KeyX:doHit,Digit1:()=>start('A'),KeyA:()=>start('A'),Digit2:()=>start('B'),KeyB:()=>start('B'),KeyT:toClock,KeyR:()=>start(game),KeyP:togglePause,Escape:togglePause};
 addEventListener('keydown',e=>{const f=KEYS[e.code];if(!f)return;e.preventDefault();if(!e.repeat)f()});
-$('snd').textContent=muted?'🔇':'🔊';
-$('snd').addEventListener('click',()=>{muted=!muted;$('snd').textContent=muted?'🔇':'🔊';
-  try{localStorage.setItem('snoopy-mute',muted?'1':'0')}catch(e){}if(!muted)beep(880,.08)});
+function syncLeds(){
+  document.querySelectorAll('[data-led=pause]').forEach(e=>e.classList.toggle('lit',paused));
+  document.querySelectorAll('[data-led=snd]').forEach(e=>e.classList.toggle('lit',!muted));
+}
+bind(['snd','dSnd'],()=>{muted=!muted;try{localStorage.setItem('snoopy-mute',muted?'1':'0')}catch(e){}if(!muted)beep(880,.08);syncLeds()});
+syncLeds();
 
 /* ---------- layout ---------- */
-const stage=$('stage'),shell=$('shell'),ctrl=$('ctrl');
+const stage=$('stage'),shell=$('shell');
 const LCD={x:564,y:322};
 function fit(){
   const de=document.documentElement,vv=window.visualViewport;
   const vw=Math.min(innerWidth,de.clientWidth||innerWidth,vv?vv.width:innerWidth),vh=Math.min(innerHeight,vv?vv.height:innerHeight);
   const portraitView=vh>vw;
-  const upright=layout==='port'||(layout==='auto'&&vw<720&&portraitView);   // the device stood on its side
-  const rotate=layout==='land'&&portraitView;                                  // landscape device on an upright phone
-  $('lay').textContent=LAYLBL[layout];
+  const upright=layout==='port';                 // the device stood on its side
+  const rotate=layout==='land'&&portraitView;    // landscape device on an upright phone: turn it 90°
   if(upright){
     stage.style.display='none';shell.style.display='block';
     if(cv.parentNode!==$('lcdSlot'))$('lcdSlot').appendChild(cv);
-    if(ctrl.parentNode!==$('ctrlSlot')){$('ctrlSlot').appendChild(ctrl)}
-    ctrl.classList.add('inline');ctrl.classList.remove('rot','side');
     cv.removeAttribute('style');
     // a wide or short screen can't hold the upright device at full size: draw it at a fixed
     // phone size and scale the whole thing down, centred
@@ -396,18 +410,15 @@ function fit(){
   }else{
     shell.style.display='none';stage.style.display='block';
     if(cv.parentNode!==stage)stage.appendChild(cv);
-    if(ctrl.parentNode!==document.body)document.body.insertBefore(ctrl,shell);
-    ctrl.classList.remove('inline');ctrl.classList.toggle('rot',rotate);ctrl.classList.toggle('side',!rotate);
     cv.removeAttribute('style');
-    const BAR=68;                                  // room for the control buttons
     stage.style.left='0px';stage.style.top='0px';
-    if(rotate){                                    // phone upright, device turned 90° (buttons end up on the player's right)
-      const s=Math.min((vh-BAR)/2123,vw/1302)*0.96, w=2123*s, h=1302*s;
-      const L=(vw-h)/2,T=(vh-BAR-w)/2;
+    if(rotate){
+      const s=Math.min(vh/2123,vw/1302)*0.97, w=2123*s, h=1302*s;
+      const L=(vw-h)/2,T=(vh-w)/2;
       stage.style.transform=`translate(${L+h}px,${T}px) rotate(90deg) scale(${s})`;
     }else{
-      const s=Math.min((vw-BAR)/2123,vh/1302)*0.96;
-      const L=(vw-BAR-2123*s)/2,T=(vh-1302*s)/2;
+      const s=Math.min(vw/2123,vh/1302)*0.97;
+      const L=(vw-2123*s)/2,T=(vh-1302*s)/2;
       stage.style.transform=`translate(${L}px,${T}px) scale(${s})`;
     }
   }
