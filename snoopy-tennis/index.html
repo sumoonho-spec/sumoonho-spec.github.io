@@ -14,17 +14,24 @@
 <style>
 :root{--bg:#2b2730;--purple:#9b78b4;--purple-d:#6f5489;--red:#e0564f;--red-d:#b53a35}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
-html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;touch-action:manipulation;overscroll-behavior:none}
+html,body{margin:0;height:100%;background:radial-gradient(ellipse at 50% 45%,#3b3443 0%,#25212a 60%,#1b181f 100%) fixed var(--bg);overflow:hidden;touch-action:manipulation;overscroll-behavior:none}
 #view{position:fixed;left:0;top:0;width:100%;height:100%;overflow:hidden}
 #stage{position:absolute;left:0;top:0;width:2123px;height:1302px;transform-origin:0 0;border-radius:36px;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.55)}
 #device{position:absolute;left:0;top:0;width:2123px;height:1302px;display:block;pointer-events:none}
 #cv{position:fixed;display:block;image-rendering:auto;z-index:2}
+#stage #cv{position:absolute;left:564px;top:322px;width:997px;height:632px}
 .hit{position:absolute;z-index:3;border:0;padding:0;background:transparent;cursor:pointer;border-radius:50%}
 .hit.pill{border-radius:30px}
 .hit.on{background:rgba(0,0,0,.22)}
 #ctrl{position:fixed;top:calc(10px + env(safe-area-inset-top));right:calc(10px + env(safe-area-inset-right));display:flex;gap:10px;z-index:6}
-#ctrl button{width:48px;height:48px;border-radius:50%;border:3px solid var(--purple);background:rgba(43,39,48,.85);color:#fff;font:700 20px/1 Arial,sans-serif;cursor:pointer;padding:0;touch-action:none}
-#ctrl button.on{background:var(--purple-d)}
+#ctrl.side{top:50%;transform:translateY(-50%);flex-direction:column;gap:12px}
+#ctrl.rot{top:auto;right:0;left:0;bottom:calc(10px + env(safe-area-inset-bottom));justify-content:center;flex-direction:row-reverse;gap:14px}
+#ctrl button{width:46px;height:46px;border-radius:50%;border:2px solid #9b78b4;background:linear-gradient(#433b4c,#28232e);color:#efe6c8;font:700 18px/1 Arial,sans-serif;cursor:pointer;padding:0;touch-action:none;box-shadow:0 3px 0 #17141b,0 6px 12px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.15)}
+#ctrl button.on{background:linear-gradient(#5b4a6b,#3d3248);transform:translateY(2px);box-shadow:0 1px 0 #17141b,inset 0 2px 4px rgba(0,0,0,.4)}
+#ctrl.rot button.on{transform:rotate(90deg) translateY(2px)}
+#ctrl #lay{font:800 13px/1 "Helvetica Neue",Arial,sans-serif;letter-spacing:-.3px}
+#ctrl #restart{font-size:24px}
+#ctrl.rot button{transform:rotate(90deg)}
 
 /* ===== portrait: the device stood upright ===== */
 #shell{display:none;position:fixed;inset:0;z-index:4;
@@ -38,8 +45,8 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;touch-action
 #top{display:flex;align-items:center;justify-content:space-between;min-height:46px;margin-bottom:8px}
 #best{font:800 12px/1.25 "Helvetica Neue",Arial,sans-serif;letter-spacing:1.2px;color:#5a4a28;text-shadow:0 1px 0 rgba(255,255,255,.6)}
 #best b{display:block;font-size:10px;letter-spacing:2px;color:#8a7440}
-#ctrl.inline{position:static;gap:8px}
-#ctrl.inline button{width:40px;height:40px;border:0;color:#5a4a28;font-size:15px;
+#ctrl.inline{position:static;gap:clamp(4px,1.6vw,8px)}
+#ctrl.inline button{width:clamp(34px,10vw,40px);height:clamp(34px,10vw,40px);border:0;color:#5a4a28;font-size:15px;
   background:linear-gradient(#efe3b2,#d2bc7b);box-shadow:0 2px 0 #a88f4e,inset 0 1px 0 rgba(255,255,255,.8),0 0 0 1px #b39a5a}
 #ctrl.inline button.on{transform:translateY(2px);box-shadow:0 0 0 #a88f4e,inset 0 1px 3px rgba(0,0,0,.25),0 0 0 1px #b39a5a;background:linear-gradient(#d9c68a,#c9b16e)}
 
@@ -68,6 +75,11 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;touch-action
   background:radial-gradient(circle at 34% 28%,#ffb3aa 0%,#f0645a 22%,#d63a31 55%,#9e1f19 100%);
   box-shadow:0 0 0 2px #7b5a98,0 5px 0 #6a4e85,0 9px 14px rgba(60,30,10,.35),inset 0 -5px 8px rgba(80,0,0,.35),inset 0 3px 5px rgba(255,255,255,.35)}
 .red.big{--s:clamp(92px,15vh,124px)}
+#shell.scaled{padding:0;background:radial-gradient(ellipse at 50% 45%,#3b3443 0%,#25212a 60%,#1b181f 100%)}
+#shell.scaled #face{border:12px solid #9474b0;border-radius:38px;box-shadow:inset 0 2px 0 rgba(255,255,255,.7),inset 0 -3px 8px rgba(80,60,20,.25),0 0 0 2px #7f5f9c,0 24px 50px rgba(0,0,0,.55)}
+#shell.scaled .red{--s:82px}#shell.scaled .red.big{--s:116px}#shell.scaled .dpad{gap:12px}
+#shell.scaled .pills{gap:26px}#shell.scaled .main{padding:0 18px}
+#shell.scaled #ctrl.inline{gap:8px}#shell.scaled #ctrl.inline button{width:40px;height:40px}
 .red.on{transform:translateY(4px);box-shadow:0 0 0 2px #7b5a98,0 1px 0 #6a4e85,0 2px 4px rgba(60,30,10,.3),inset 0 -2px 6px rgba(80,0,0,.4),inset 0 3px 7px rgba(0,0,0,.25)}
 </style>
 </head>
@@ -84,7 +96,7 @@ html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;touch-action
 </div>
 </div>
 <canvas id="cv" width="997" height="632"></canvas>
-<div id="ctrl"><button id="pause" aria-label="pause">❚❚</button><button id="snd" aria-label="sound">🔊</button></div>
+<div id="ctrl"><button id="restart" aria-label="restart" title="다시 시작">↻</button><button id="pause" aria-label="pause" title="일시정지">❚❚</button><button id="snd" aria-label="sound" title="소리">🔊</button><button id="lay" aria-label="layout" title="화면 모드">자동</button></div>
 <div id="shell"><div id="face">
   <div id="top"><div id="best"></div><div id="ctrlSlot"></div></div>
   <div id="bezel">
@@ -343,9 +355,15 @@ bind(['up','tUp'],()=>move(-1));bind(['down','tDown'],()=>move(1));
 bind(['hit','tHit'],doHit);bind(['bA','tA'],()=>start('A'));bind(['bB','tB'],()=>start('B'));
 bind(['bT','tT'],toClock);
 press($('pause'),togglePause);
+press($('restart'),()=>{start(game)});
+// layout: auto (follows the phone) -> landscape device -> upright device
+const LAYOUTS=['auto','land','port'],LAYLBL={auto:'자동',land:'가로',port:'세로'};
+let layout='auto';try{layout=localStorage.getItem('snoopy-layout')||'auto'}catch(e){}
+if(!LAYOUTS.includes(layout))layout='auto';
+press($('lay'),()=>{layout=LAYOUTS[(LAYOUTS.indexOf(layout)+1)%3];try{localStorage.setItem('snoopy-layout',layout)}catch(e){}fit()});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)setPause(true)});
 const KEYS={ArrowUp:()=>move(-1),KeyW:()=>move(-1),ArrowDown:()=>move(1),KeyS:()=>move(1),
-  Space:doHit,KeyZ:doHit,Enter:doHit,KeyX:doHit,Digit1:()=>start('A'),KeyA:()=>start('A'),Digit2:()=>start('B'),KeyB:()=>start('B'),KeyT:toClock,KeyP:togglePause,Escape:togglePause};
+  Space:doHit,KeyZ:doHit,Enter:doHit,KeyX:doHit,Digit1:()=>start('A'),KeyA:()=>start('A'),Digit2:()=>start('B'),KeyB:()=>start('B'),KeyT:toClock,KeyR:()=>start(game),KeyP:togglePause,Escape:togglePause};
 addEventListener('keydown',e=>{const f=KEYS[e.code];if(!f)return;e.preventDefault();if(!e.repeat)f()});
 $('snd').textContent=muted?'🔇':'🔊';
 $('snd').addEventListener('click',()=>{muted=!muted;$('snd').textContent=muted?'🔇':'🔊';
@@ -357,20 +375,41 @@ const LCD={x:564,y:322};
 function fit(){
   const de=document.documentElement,vv=window.visualViewport;
   const vw=Math.min(innerWidth,de.clientWidth||innerWidth,vv?vv.width:innerWidth),vh=Math.min(innerHeight,vv?vv.height:innerHeight);
-  const compact=vw<720&&vh>vw;                 // phone held upright: the device stood on its side
-  if(compact){
+  const portraitView=vh>vw;
+  const upright=layout==='port'||(layout==='auto'&&vw<720&&portraitView);   // the device stood on its side
+  const rotate=layout==='land'&&portraitView;                                  // landscape device on an upright phone
+  $('lay').textContent=LAYLBL[layout];
+  if(upright){
     stage.style.display='none';shell.style.display='block';
     if(cv.parentNode!==$('lcdSlot'))$('lcdSlot').appendChild(cv);
-    if(ctrl.parentNode!==$('ctrlSlot')){$('ctrlSlot').appendChild(ctrl);ctrl.classList.add('inline')}
+    if(ctrl.parentNode!==$('ctrlSlot')){$('ctrlSlot').appendChild(ctrl)}
+    ctrl.classList.add('inline');ctrl.classList.remove('rot','side');
     cv.removeAttribute('style');
+    // a wide or short screen can't hold the upright device at full size: draw it at a fixed
+    // phone size and scale the whole thing down, centred
+    const face=$('face'),scaled=!portraitView||vh<560||vw>vh*0.75;
+    shell.classList.toggle('scaled',scaled);
+    if(scaled){
+      const DW=390,DH=760,k=Math.min((vh-16)/DH,(vw-16)/DW);
+      face.style.cssText=`position:absolute;width:${DW}px;height:${DH}px;left:${(vw-DW*k)/2}px;top:${(vh-DH*k)/2}px;transform:scale(${k});transform-origin:0 0`;
+    }else face.removeAttribute('style');
   }else{
     shell.style.display='none';stage.style.display='block';
-    if(cv.parentNode!==document.body){document.body.insertBefore(cv,ctrl.parentNode===document.body?ctrl:shell)}
-    if(ctrl.parentNode!==document.body){document.body.insertBefore(ctrl,shell);ctrl.classList.remove('inline')}
-    const s=Math.min(vw/2123,vh/1302)*0.97;
-    const L=(vw-2123*s)/2,T=(vh-1302*s)/2;
-    stage.style.transform=`scale(${s})`;stage.style.left=L+'px';stage.style.top=T+'px';
-    cv.style.width=W*s+'px';cv.style.height=H*s+'px';cv.style.left=(L+LCD.x*s)+'px';cv.style.top=(T+LCD.y*s)+'px';
+    if(cv.parentNode!==stage)stage.appendChild(cv);
+    if(ctrl.parentNode!==document.body)document.body.insertBefore(ctrl,shell);
+    ctrl.classList.remove('inline');ctrl.classList.toggle('rot',rotate);ctrl.classList.toggle('side',!rotate);
+    cv.removeAttribute('style');
+    const BAR=68;                                  // room for the control buttons
+    stage.style.left='0px';stage.style.top='0px';
+    if(rotate){                                    // phone upright, device turned 90° (buttons end up on the player's right)
+      const s=Math.min((vh-BAR)/2123,vw/1302)*0.96, w=2123*s, h=1302*s;
+      const L=(vw-h)/2,T=(vh-BAR-w)/2;
+      stage.style.transform=`translate(${L+h}px,${T}px) rotate(90deg) scale(${s})`;
+    }else{
+      const s=Math.min((vw-BAR)/2123,vh/1302)*0.96;
+      const L=(vw-BAR-2123*s)/2,T=(vh-1302*s)/2;
+      stage.style.transform=`translate(${L}px,${T}px) scale(${s})`;
+    }
   }
 }
 showBest();
