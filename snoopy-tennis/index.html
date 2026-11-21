@@ -197,11 +197,14 @@ let muted=false;try{muted=localStorage.getItem('snoopy-mute')==='1'}catch(e){}
 let ac=null;
 function beep(f,d,type='square',v=.05,delay=0){
   if(muted)return;
-  try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();
+  try{if(ac&&ac.state==='closed')ac=null;
+    ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+    if(ac.state!=='running'){const r=ac.resume();if(r&&r.catch)r.catch(()=>{});if(ac.state!=='running')return}
     const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime+delay;
     o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);
     o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d+.02);}catch(e){}
 }
+function wakeAudio(){try{if(ac&&ac.state!=='running'){const r=ac.resume();if(r&&r.catch)r.catch(()=>{})}}catch(e){}}
 const sTick=()=>beep(300,.03,'square',.02);
 const sHit=()=>{beep(1300,.07);beep(1700,.09,'square',.05,.07)};
 const sMiss=()=>{beep(150,.35,'sawtooth',.07);beep(110,.35,'sawtooth',.07,.18)};
@@ -257,7 +260,7 @@ function stepMiss(now){
   if(!missSeq.thr&&e>=MS.throw){missSeq.thr=true;beep(220,.08,'square',.05);beep(180,.12,'square',.05,.09)}
   if(e>=MS.end){missSeq=null;if(miss>=MAX_MISS){deadPose=true;gameOver()}}
 }
-const APP_VERSION='2.4';
+const APP_VERSION='2.5';
 function showBest(){const el=document.getElementById('best');if(el)el.innerHTML='<b>BEST</b>A '+(best.A||0)+' &nbsp;·&nbsp; B '+(best.B||0)+'<i>v'+APP_VERSION+'</i>'}
 document.getElementById('ver').textContent='v'+APP_VERSION;
 function gameOver(){
@@ -290,7 +293,8 @@ function tryHit(now){
   return true;
 }
 function move(d){
-  if(mode!=='play'||paused||missSeq)return;
+  if(paused){setPause(false);return}
+  if(mode!=='play'||missSeq)return;
   const n=Math.max(0,Math.min(2,spot+d));
   if(n!==spot){spot=n;hitBuffer=0;beep(420,.025,'square',.03)}
 }
@@ -423,7 +427,14 @@ function render(now){
 }
 
 /* ---------- loop ---------- */
-function loop(){const now=gnow();update(now);render(now);requestAnimationFrame(loop)}
+let lastFrame=performance.now(),loopErrors=0;
+function loop(){
+  requestAnimationFrame(loop);
+  const t=performance.now(),gap=t-lastFrame;lastFrame=t;
+  if(gap>400&&!paused){pausedTotal+=gap-16;if(mode==='play')setPause(true)}   // frames stopped: don't count that time
+  try{const now=gnow();update(now);render(now)}
+  catch(e){if(++loopErrors<=5)console.error('frame error',e)}               // keep running whatever happens
+}
 requestAnimationFrame(loop);
 if(location.hash==='#debug')window.__score=v=>{score=v};
 if(location.hash==='#debug')window.__st=()=>({rallies,stepC:Math.round(stepC()),maxB:cfg().max,mode,score,miss,spot,ms:missSeq?gnow()-missSeq.t0:-1,balls:balls.map(b=>({to:b.to,lane:b.lane,i:b.i,n:b.path.length,ret:b.ret,type:b.type}))});
@@ -446,7 +457,12 @@ bind(['restart','dRestart'],()=>{start(game)});
 let layout=null;try{layout=localStorage.getItem('snoopy-layout')}catch(e){}
 if(layout!=='land'&&layout!=='port')layout=(innerWidth<720&&innerHeight>innerWidth)?'port':'land';
 bind(['lay','dLay'],()=>{layout=layout==='land'?'port':'land';try{localStorage.setItem('snoopy-layout',layout)}catch(e){}fit()});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)setPause(true)});
+function onLeave(){setPause(true);document.querySelectorAll('.on').forEach(e=>e.classList.remove('on'))}
+function onBack(){lastFrame=performance.now();document.querySelectorAll('.on').forEach(e=>e.classList.remove('on'));wakeAudio();fit()}
+document.addEventListener('visibilitychange',()=>{document.hidden?onLeave():onBack()});
+addEventListener('pagehide',onLeave);addEventListener('pageshow',onBack);
+addEventListener('blur',onLeave);addEventListener('focus',onBack);
+addEventListener('pointerdown',wakeAudio,{capture:true});
 const KEYS={ArrowUp:()=>move(-1),KeyW:()=>move(-1),ArrowDown:()=>move(1),KeyS:()=>move(1),
   Space:doHit,KeyZ:doHit,Enter:doHit,KeyX:doHit,Digit1:()=>start('A'),KeyA:()=>start('A'),Digit2:()=>start('B'),KeyB:()=>start('B'),KeyT:toClock,KeyR:()=>start(game),KeyP:togglePause,Escape:togglePause};
 addEventListener('keydown',e=>{const f=KEYS[e.code];if(!f)return;e.preventDefault();if(!e.repeat)f()});
