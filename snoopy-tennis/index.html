@@ -270,7 +270,7 @@ function stepMiss(now){
   if(!missSeq.thr&&e>=MS.throw){missSeq.thr=true;beep(220,.08,'square',.05);beep(180,.12,'square',.05,.09)}
   if(e>=MS.end){missSeq=null;if(miss>=MAX_MISS){deadPose=true;gameOver()}}
 }
-const APP_VERSION='2.5';
+const APP_VERSION='2.6';
 function showBest(){const el=document.getElementById('best');if(el)el.innerHTML='<b>BEST</b>A '+(best.A||0)+' &nbsp;·&nbsp; B '+(best.B||0)+'<i>v'+APP_VERSION+'</i>'}
 document.getElementById('ver').textContent='v'+APP_VERSION;
 function gameOver(){
