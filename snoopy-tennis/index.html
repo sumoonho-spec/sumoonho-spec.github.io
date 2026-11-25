@@ -205,15 +205,20 @@ function beep(f,d,type='square',v=.05,delay=0){
     o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d+.02);}catch(e){}
 }
 function wakeAudio(){try{if(ac&&ac.state!=='running'){const r=ac.resume();if(r&&r.catch)r.catch(()=>{})}}catch(e){}}
-const iosTap=(()=>{try{const l=document.createElement('label');l.setAttribute('aria-hidden','true');
-  l.style.cssText='position:fixed;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;left:-9px;top:-9px';
-  const i=document.createElement('input');i.type='checkbox';i.setAttribute('switch','');i.tabIndex=-1;l.appendChild(i);
-  (document.body||document.documentElement).appendChild(l);return l}catch(e){return null}})();
-let inTouch=false;
+// iPhone Safari has no vibrate API. Toggling an <input switch> plays the system haptic (iOS 18+),
+// but WebKit only allows it inside a completed user action, so a hit made on touch-down is queued
+// and the haptic fires when the finger lifts (touchend / pointerup).
+let inTouch=false,iosPending=0;
+function iosHaptic(){
+  try{const l=document.createElement('label');l.setAttribute('aria-hidden','true');l.style.display='none';
+    const i=document.createElement('input');i.type='checkbox';i.setAttribute('switch','');l.appendChild(i);
+    document.head.appendChild(l);l.click();document.head.removeChild(l)}catch(e){}
+}
+function flushIosHaptic(){if(iosPending>0){iosPending=0;iosHaptic()}}
 function haptic(pattern){
   if(muted)return;                                         // SOUND off = quiet mode, no buzz either
   try{if(navigator.vibrate){navigator.vibrate(pattern);return}}catch(e){}
-  if(inTouch&&iosTap)try{iosTap.click()}catch(e){}
+  if(inTouch)iosPending++;                                 // iPhone: play it when the finger lifts
 }
 const sTick=()=>beep(300,.03,'square',.02);
 const sHit=()=>{beep(1300,.07);beep(1700,.09,'square',.05,.07)};
@@ -456,6 +461,7 @@ function press(el,fn){
   const off=()=>el.classList.remove('on');
   el.addEventListener('pointerdown',on);
   ['pointerup','pointerleave','pointercancel'].forEach(ev=>el.addEventListener(ev,off));
+  ['touchend','pointerup','click'].forEach(ev=>el.addEventListener(ev,flushIosHaptic));
 }
 const bind=(ids,fn)=>ids.forEach(i=>press($(i),fn));
 bind(['up','tUp'],()=>move(-1));bind(['down','tDown'],()=>move(1));
