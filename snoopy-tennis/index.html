@@ -205,6 +205,16 @@ function beep(f,d,type='square',v=.05,delay=0){
     o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+d+.02);}catch(e){}
 }
 function wakeAudio(){try{if(ac&&ac.state!=='running'){const r=ac.resume();if(r&&r.catch)r.catch(()=>{})}}catch(e){}}
+const iosTap=(()=>{try{const l=document.createElement('label');l.setAttribute('aria-hidden','true');
+  l.style.cssText='position:fixed;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;left:-9px;top:-9px';
+  const i=document.createElement('input');i.type='checkbox';i.setAttribute('switch','');i.tabIndex=-1;l.appendChild(i);
+  (document.body||document.documentElement).appendChild(l);return l}catch(e){return null}})();
+let inTouch=false;
+function haptic(pattern){
+  if(muted)return;                                         // SOUND off = quiet mode, no buzz either
+  try{if(navigator.vibrate){navigator.vibrate(pattern);return}}catch(e){}
+  if(inTouch&&iosTap)try{iosTap.click()}catch(e){}
+}
 const sTick=()=>beep(300,.03,'square',.02);
 const sHit=()=>{beep(1300,.07);beep(1700,.09,'square',.05,.07)};
 const sMiss=()=>{beep(150,.35,'sawtooth',.07);beep(110,.35,'sawtooth',.07,.18)};
@@ -255,7 +265,7 @@ function doMiss(now,lane){
 }
 function stepMiss(now){
   const e=now-missSeq.t0;
-  if(!missSeq.counted&&e>=MS.count){missSeq.counted=true;miss++;beep(700,.06,'square',.04)}
+  if(!missSeq.counted&&e>=MS.count){missSeq.counted=true;miss++;beep(700,.06,'square',.04);haptic([60,50,60])}
   if(!missSeq.zz&&e>=MS.sleep){missSeq.zz=true;[392,330,262].forEach((f,i)=>beep(f,.16,'triangle',.05,i*.18))}
   if(!missSeq.thr&&e>=MS.throw){missSeq.thr=true;beep(220,.08,'square',.05);beep(180,.12,'square',.05,.09)}
   if(e>=MS.end){missSeq=null;if(miss>=MAX_MISS){deadPose=true;gameOver()}}
@@ -285,7 +295,7 @@ function tryHit(now){
   const b=balls.filter(b=>!b.ret&&b.lane===spot&&b.i>=b.path.length-2).sort((a,c)=>c.i-a.i)[0];
   if(!b)return false;
   hitBuffer=0;swingAt=Math.min(swingAt,now);
-  addScore(b.type==='C'?2:3);sHit();
+  addScore(b.type==='C'?2:3);sHit();haptic(b.type==='C'?25:40);   // a firmer thump for Lucy's fast ball
   // the return flies straight back at the same height (leaves at once): to Charlie, who rallies it,
   // or into Lucy's lane, where she intercepts it
   b.ret=true;b.to=Math.random()<0.5?'L':'C';   // half to Lucy, half back to Charlie
@@ -442,7 +452,7 @@ if(location.hash==='#debug')window.__st=()=>({rallies,stepC:Math.round(stepC()),
 /* ---------- input ---------- */
 const $=id=>document.getElementById(id);
 function press(el,fn){
-  const on=e=>{e.preventDefault();el.classList.add('on');try{navigator.vibrate&&navigator.vibrate(8)}catch(_){}fn()};
+  const on=e=>{e.preventDefault();el.classList.add('on');try{!muted&&navigator.vibrate&&navigator.vibrate(8)}catch(_){}inTouch=true;try{fn()}finally{inTouch=false}};
   const off=()=>el.classList.remove('on');
   el.addEventListener('pointerdown',on);
   ['pointerup','pointerleave','pointercancel'].forEach(ev=>el.addEventListener(ev,off));
